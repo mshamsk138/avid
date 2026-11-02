@@ -1,5 +1,5 @@
 # Test and build dependencies, pinned. The engine and agent need nothing beyond the Python standard library;
 # live trading additionally needs `cryptography` (Debian/Ubuntu/Kali: apt install python3-cryptography).
-pytest==9.1.1
+pytest==9.2.0
 cryptography==50.0.1
 setuptools==84.1.0
