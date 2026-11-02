@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "avid-rebalancer"
+version = "0.1.0a2"
+description = "AVID: a conservative, auditable fixed-weight portfolio rebalancer and private agent for Nobitex (simulation by default)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "Mehdi Shams"}]
+keywords = ["rebalancing", "portfolio", "nobitex", "trading-bot", "audit"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: POSIX :: Linux",
+    "Intended Audience :: Developers",
+    "Topic :: Office/Business :: Financial :: Investment",
+    "Typing :: Typed",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/mshamsk138/avid"
+Source = "https://github.com/mshamsk138/avid"
+Issues = "https://github.com/mshamsk138/avid/issues"
+Changelog = "https://github.com/mshamsk138/avid/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+live = ["cryptography>=42"]
+test = ["pytest>=8"]
+
+[project.scripts]
+avid-agent = "avid_agent.__main__:main"
+avid-engine = "avid_core.cli:main"
+
+[tool.setuptools]
+package-dir = {"avid_core" = "avid_core", "avid_agent" = "agent/avid_agent"}
+packages = ["avid_core", "avid_core.examples", "avid_agent"]
+
+[tool.setuptools.package-data]
+avid_core = ["py.typed"]
+"avid_core.examples" = ["*.json"]
+avid_agent = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "security"]
+addopts = "-p no:cacheprovider"
+# test categories are markers assigned per file in conftest.py (CATEGORIES): pytest -m fuzz, -m security ...

@@ -1,0 +1,3 @@
+# full suite, pure-Python signer (cryptography hidden), AVID_ALLOW_PURE_ED25519=1 for the simulated exchange
+..........................................                               [100%]
+249 passed, 9 skipped in 38.77s

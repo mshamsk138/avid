@@ -1,0 +1,3 @@
+# baseline — signer import on Python 3.11 with the distro cryptography (built for 3.12)
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+backend() raised pyo3_runtime PanicException is Exception subclass: False

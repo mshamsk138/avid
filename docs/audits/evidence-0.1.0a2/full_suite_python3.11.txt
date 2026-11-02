@@ -1,0 +1,16 @@
+# 0.1.0a2 full suite, Python 3.11.18, pytest 9.1.1 from a pure-Python shim on PYTHONPATH (no package index here); distro cryptography; signer backend: pure - PanicException: Python API call failed
+2026-11-02T05:18:39Z
+sssss................................................................... [ 20%]
+.........................................sss............................ [ 40%]
+................................s....................................... [ 61%]
+........................................................................ [ 81%]
+.................................................................        [100%]
+=========================== short test summary info ============================
+SKIPPED [1] tests/contract/test_nobitex_testnet.py:65: contract tests need AVID_CONTRACT_TESTNET=1, NOBITEX_NETWORK=testnet and NOBITEX_SECRETS_DIR
+SKIPPED [1] tests/contract/test_nobitex_testnet.py:86: contract tests need AVID_CONTRACT_TESTNET=1, NOBITEX_NETWORK=testnet and NOBITEX_SECRETS_DIR
+SKIPPED [1] tests/contract/test_nobitex_testnet.py:99: contract tests need AVID_CONTRACT_TESTNET=1, NOBITEX_NETWORK=testnet and NOBITEX_SECRETS_DIR
+SKIPPED [1] tests/contract/test_nobitex_testnet.py:104: contract tests need AVID_CONTRACT_TESTNET=1, NOBITEX_NETWORK=testnet and NOBITEX_SECRETS_DIR
+SKIPPED [1] tests/contract/test_nobitex_testnet.py:112: contract tests need AVID_CONTRACT_TESTNET=1, NOBITEX_NETWORK=testnet and NOBITEX_SECRETS_DIR
+SKIPPED [3] tests/test_ed25519.py:33: cryptography is installed but not usable here: PanicException: Python API call failed
+SKIPPED [1] tests/test_packaging.py:164: the local cryptography does not satisfy the extra without an index
+344 passed, 9 skipped in 63.30s (0:01:03)

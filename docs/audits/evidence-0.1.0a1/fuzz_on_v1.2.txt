@@ -1,0 +1,11 @@
+# engine fuzz on v1.2 (AVID_SRC=original code), 1500 steps x 4 seeds: first violation per seed
+E       AssertionError: step 193: I3 54.7577 USDT committed on 2023-11-16
+E       AssertionError: step 180: A bot counts 19.8865 committed, truth 39.9000
+E       AssertionError: step 231: A bot counts 0.0000 committed, truth 19.9915
+E       AssertionError: step 34: A bot counts 0.0000 committed, truth 19.9833
+4 failed in 0.91s
+
+# all violations found on v1.2 (counted by type)
+     90 A bot counts below truth
+     20 I3 <x> USDT committed on 2023-11-16
+      2 I2 <n> orders created on 2023-11-16

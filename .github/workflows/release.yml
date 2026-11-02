@@ -1,0 +1,115 @@
+name: release
+
+# Pushing a version tag (v0.1.0a2) builds the release files, records build provenance and opens a
+# DRAFT pre-release with them. Nothing is published: the owner reviews the draft and publishes it by
+# hand. PyPI upload is a separate, manual job (Trusted Publishing, protected "pypi" environment) that
+# only runs when started explicitly with publish_to_pypi = true.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: existing tag to build (e.g. v0.1.0a2)
+        required: true
+      publish_to_pypi:
+        description: upload this build to PyPI (needs the "pypi" environment approval)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write             # sign the provenance attestation (Sigstore)
+      attestations: write
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - id: tag
+        env:
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          case "$TAG" in v[0-9]*) ;; *) echo "not a version tag: $TAG" >&2; exit 1 ;; esac
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
+        with:
+          ref: refs/tags/${{ steps.tag.outputs.tag }}
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0   # v7.1.0
+        with:
+          python-version: '3.12'
+      - name: the tag matches the package version
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          v=$(python -c "import re; print(re.search(r'^version = \"([^\"]+)\"', open('pyproject.toml').read(), re.M).group(1))")
+          test "v$v" = "$TAG" || { echo "tag $TAG != version $v" >&2; exit 1; }
+      - name: tests before building
+        run: |
+          python -m pip install --disable-pip-version-check pytest==9.1.1 cryptography==50.0.1 setuptools==80.9.0
+          python -m pytest -q
+      - name: build sdist, wheel, source archive, SBOM, SHA256SUMS
+        run: |
+          export SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)
+          python scripts/build-dist.py --out dist --git-archive
+          cat dist/SHA256SUMS
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8   # v4.2.2
+        with:
+          subject-path: 'dist/*'
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9   # v7.0.2
+        with:
+          name: release-dist
+          path: dist/
+          if-no-files-found: error
+
+  draft-release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write             # create the DRAFT release only
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
+        with:
+          ref: refs/tags/${{ needs.build.outputs.tag }}
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333   # v8.0.2
+        with:
+          name: release-dist
+          path: dist
+      - name: create a draft pre-release (never published by this workflow)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.build.outputs.tag }}
+        run: |
+          notes="docs/releases/$TAG.md"
+          [ -f "$notes" ] || notes=CHANGELOG.md
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "release $TAG already exists: not touched (tags and releases are never rewritten)"; exit 0
+          fi
+          gh release create "$TAG" --draft --prerelease --verify-tag --title "AVID $TAG (alpha)" \
+            --notes-file "$notes" dist/*
+
+  pypi:
+    # manual only: workflow_dispatch with publish_to_pypi = true, plus the environment's required reviewers
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/avid-rebalancer/
+    permissions:
+      id-token: write             # PyPI Trusted Publishing (no API token stored anywhere)
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333   # v8.0.2
+        with:
+          name: release-dist
+          path: dist
+      - name: keep only the Python distributions
+        run: find dist -type f ! -name '*.whl' ! -name '*.tar.gz' -delete && rm -f dist/*-source.tar.gz && ls -l dist
+      - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086   # v1.14.3

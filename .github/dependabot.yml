@@ -1,0 +1,16 @@
+version: 2
+updates:
+  # pinned action SHAs: Dependabot proposes the new SHA with its release comment
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']
+  # pinned test / live dependencies (requirements-dev.txt); AVID itself has no runtime dependencies
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5

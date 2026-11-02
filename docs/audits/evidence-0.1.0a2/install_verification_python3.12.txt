@@ -1,0 +1,145 @@
+python 3.12.3; wheel avid_rebalancer-0.1.0a2-py3-none-any.whl; temporary HOME with spaces: /tmp/avid verify c2hd5zo9/home dir
+
+[PASS] create a clean virtual environment (no system site packages)
+  $ /usr/bin/python3.12 -m venv ./venv with space
+  exit 0 (expected 0)
+
+[PASS] install the wheel offline, no dependencies needed
+  $ ./venv with space/bin/python -m pip install --no-index --no-deps --disable-pip-version-check /tmp/prebuild/avid_rebalancer-0.1.0a2-py3-none-any.whl
+  exit 0 (expected 0); expected output containing 'Successfully installed'
+  | Processing /tmp/prebuild/avid_rebalancer-0.1.0a2-py3-none-any.whl
+  | Installing collected packages: avid-rebalancer
+  | Successfully installed avid-rebalancer-0.1.0a2
+
+[PASS] avid-engine is on the venv PATH without PYTHONPATH
+  $ /tmp/avid verify c2hd5zo9/venv with space/bin/avid-engine --version
+  exit 0 (expected 0); expected output containing 'avid-engine 0.'
+  | avid-engine 0.1.0a2
+
+[PASS] avid-agent --version
+  $ /tmp/avid verify c2hd5zo9/venv with space/bin/avid-agent --version
+  exit 0 (expected 0); expected output containing 'avid-agent/'
+  | avid-agent/0.1.0a2
+
+[PASS] avid-engine help
+  $ /tmp/avid verify c2hd5zo9/venv with space/bin/avid-engine help
+  exit 0 (expected 0); expected output containing 'simulate'
+  | usage: avid-engine [-h] [--version] command ...
+  | 
+  | AVID rebalancing engine (Nobitex). Nothing is traded unless `run --live` is
+  | given.
+  | 
+  | positional arguments:
+
+[PASS] avid-agent help lists the service commands
+  $ /tmp/avid verify c2hd5zo9/venv with space/bin/avid-agent help
+  exit 0 (expected 0); expected output containing 'avid-agent uninstall'
+  | avid-agent: the AVID Private Agent command line.
+  | 
+  |   avid-agent install                                  background service (systemd --user), no root
+  |   avid-agent uninstall [--keep-orders] [--force]      controlled stop + remove the service; keeps your data
+  |   avid-agent pair --cloud https://avid.example.ir --code K7QX-M2PR-9WDA
+  |   avid-agent ceilings                                 show local hard limits
+
+[PASS] offline simulation of the bundled example (package data present)
+  $ /tmp/avid verify c2hd5zo9/venv with space/bin/avid-engine simulate --example btc-usdt
+  exit 0 (expected 0); expected output containing 'Portfolio Value  200.00 USDT'
+  | AVID offline SIMULATION - btc-usdt: 200 USDT, target BTC 50% / USDT 50%
+  |   Offline simulation with stored synthetic prices: no exchange, no network, no real order. Shows how the engine decides; it is not a forecast or a pro
+  |   96 steps of 600 s, 2026-01-05T18:00:00Z .. 2026-01-06T09:50:00Z; fill rule: resting order fills completely at its price once a later book crosses it
+  | 
+  | First decision (step 1, 2026-01-05T18:00:00Z)
+  |   Portfolio Value  200.00 USDT (estimated at mid prices)
+  |   Current Weights  btc 0.0000  usdt 1.0000
+  |   Target Weights   btc 0.5000  usdt 0.5000
+  |   Band             ±25% of each target (btc 0.375-0.625, usdt 0.375-0.625)
+  |   Decision         BUY order placed on the simulated exchange
+  |   Order Amount     0.000333 BTC (BUY on BTCUSDT)
+  |   Order Price      59988.0 USDT, limit (resting side); notional 19.98 USDT
+  |   Risk Checks      cash_reserve OK (200.00 free - 20.54 (order + fee reserve + margin) = 179.46 USDT; floor 0); day_lock OK (not locked); orders_per_d
+  |   Reason           btc weight 0.000 vs target 0.500
+  | 
+  | Timeline (steps where something happened)
+
+[PASS] simulation as JSON
+  $ /tmp/avid verify c2hd5zo9/venv with space/bin/avid-engine simulate --example btc-paxg-usdt --json --steps 5
+  exit 0 (expected 0); expected output containing '"kind": "SIMULATION"'
+  | {
+  |   "kind": "SIMULATION",
+  |   "scenario": "btc-paxg-usdt",
+
+[PASS] status of an empty folder (no network, no files created)
+  $ /tmp/avid verify c2hd5zo9/venv with space/bin/avid-engine status --root ./nothing
+  exit 0 (expected 0); expected output containing 'no engine data'
+  | AVID engine status (/tmp/avid verify c2hd5zo9/home dir/nothing) - local files only, nothing was sent
+  |   no engine data in /tmp/avid verify c2hd5zo9/home dir/nothing/data/bot (the engine has not run here)
+
+[PASS] check without credentials: clear error, exit 2, no traceback
+  $ /tmp/avid verify c2hd5zo9/venv with space/bin/avid-engine check
+  exit 2 (expected 2)
+  | avid-engine: no credentials in /run/secrets/nobitex: need api_key + secret files, or a token file
+
+[PASS] agent status before pairing
+  $ /tmp/avid verify c2hd5zo9/venv with space/bin/avid-agent status
+  exit 0 (expected 0); expected output containing 'not paired'
+  | AVID agent status
+  |   Service          not running (not installed)
+  |   Cloud            not paired  agent -
+  |   Network          mainnet
+  |   Last sync ok     None   mode None   portfolio None
+  |   Ceilings         live no, order <= 20.0 USDT, 6/day, <= 100.0 USDT/day
+
+[PASS] agent install --unit-only into the temporary HOME (root container: --allow-root)
+  $ /tmp/avid verify c2hd5zo9/venv with space/bin/avid-agent install --unit-only --no-linger --allow-root
+  exit 0 (expected 0); expected output containing 'service unit written'
+  | service unit written: /tmp/avid verify c2hd5zo9/home dir/.config/systemd/user/avid-agent.service
+  | note: live orders need python3-cryptography (sudo apt install -y python3-cryptography, or pip install "avid-rebalancer[live]")
+  | note: no Nobitex key in /tmp/avid verify c2hd5zo9/home dir/.nobitex yet
+  | next: avid-agent pair --cloud <your AVID Cloud URL> --code <code>, then avid-agent start
+
+[PASS] the unit passes systemd-analyze verify
+  $ systemd-analyze verify ./.config/systemd/user/avid-agent.service
+  exit 0 (expected 0)
+  | ExecStart: ExecStart="/tmp/avid verify c2hd5zo9/venv with space/bin/python" "-m" "avid_agent" "run"
+
+[PASS] install again: idempotent
+  $ /tmp/avid verify c2hd5zo9/venv with space/bin/avid-agent install --unit-only --no-linger --allow-root
+  exit 0 (expected 0); expected output containing 'unchanged'
+  | service unit unchanged: /tmp/avid verify c2hd5zo9/home dir/.config/systemd/user/avid-agent.service
+  | note: live orders need python3-cryptography (sudo apt install -y python3-cryptography, or pip install "avid-rebalancer[live]")
+  | note: no Nobitex key in /tmp/avid verify c2hd5zo9/home dir/.nobitex yet
+  | next: avid-agent pair --cloud <your AVID Cloud URL> --code <code>, then avid-agent start
+
+[PASS] agent start before pairing: refused, exit 2
+  $ /tmp/avid verify c2hd5zo9/venv with space/bin/avid-agent start
+  exit 2 (expected 2)
+  | error: agent is not paired yet: run  avid-agent pair --cloud <url> --code <code>
+
+[PASS] agent uninstall: removes the unit, keeps user data
+  $ /tmp/avid verify c2hd5zo9/venv with space/bin/avid-agent uninstall
+  exit 0 (expected 0); expected output containing 'kept your data'
+  | the service is not running: cancelling what the bot may have left open
+  | agent stopped; not paired (agent is not paired yet: run  avid-agent pair --cloud <url> --code <code>); nothing to cancel
+  | removed /tmp/avid verify c2hd5zo9/home dir/.config/systemd/user/avid-agent.service
+  | kept your data: /tmp/avid verify c2hd5zo9/home dir/.avid-agent (agent identity, state, outbox) and /tmp/avid verify c2hd5zo9/home dir/.nobitex (Nobite
+
+[PASS] reinstall the same wheel (force)
+  $ ./venv with space/bin/python -m pip install --no-index --no-deps --force-reinstall --disable-pip-version-check /tmp/prebuild/avid_rebalancer-0.1.0a2-py3-none-any.whl
+  exit 0 (expected 0); expected output containing 'Successfully installed'
+  | Processing /tmp/prebuild/avid_rebalancer-0.1.0a2-py3-none-any.whl
+  | Installing collected packages: avid-rebalancer
+  |   Attempting uninstall: avid-rebalancer
+  |     Found existing installation: avid-rebalancer 0.1.0a2
+  |     Uninstalling avid-rebalancer-0.1.0a2:
+  |       Successfully uninstalled avid-rebalancer-0.1.0a2
+
+[PASS] pip uninstall
+  $ ./venv with space/bin/python -m pip uninstall -y avid-rebalancer
+  exit 0 (expected 0); expected output containing 'Successfully uninstalled'
+  | Found existing installation: avid-rebalancer 0.1.0a2
+  | Uninstalling avid-rebalancer-0.1.0a2:
+  |   Successfully uninstalled avid-rebalancer-0.1.0a2
+
+[PASS] commands removed by pip uninstall
+
+0 failed expectation(s)

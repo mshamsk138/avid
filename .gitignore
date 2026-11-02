@@ -1,0 +1,31 @@
+# runtime data and secrets - never commit (report 10.4)
+data/
+.avid-agent/
+.nobitex/
+api_key
+secret
+token
+agent_key
+*.pem
+*.key
+.env
+.env.*
+!.env.example
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+state.json
+state.corrupt-*.json
+agent_state*.json
+submissions.jsonl
+log.jsonl*
+control_audit.jsonl
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.venv/
+venv/

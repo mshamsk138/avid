@@ -1,0 +1,10 @@
+# full suite, cryptography backend
+Python 3.13.18
+..........................................                               [100%]
+=========================== short test summary info ============================
+SKIPPED [1] tests/contract/test_nobitex_testnet.py:65: contract tests need AVID_CONTRACT_TESTNET=1, NOBITEX_NETWORK=testnet and NOBITEX_SECRETS_DIR
+SKIPPED [1] tests/contract/test_nobitex_testnet.py:86: contract tests need AVID_CONTRACT_TESTNET=1, NOBITEX_NETWORK=testnet and NOBITEX_SECRETS_DIR
+SKIPPED [1] tests/contract/test_nobitex_testnet.py:99: contract tests need AVID_CONTRACT_TESTNET=1, NOBITEX_NETWORK=testnet and NOBITEX_SECRETS_DIR
+SKIPPED [1] tests/contract/test_nobitex_testnet.py:104: contract tests need AVID_CONTRACT_TESTNET=1, NOBITEX_NETWORK=testnet and NOBITEX_SECRETS_DIR
+SKIPPED [1] tests/contract/test_nobitex_testnet.py:112: contract tests need AVID_CONTRACT_TESTNET=1, NOBITEX_NETWORK=testnet and NOBITEX_SECRETS_DIR
+253 passed, 5 skipped in 36.88s

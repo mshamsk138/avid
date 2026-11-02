@@ -1,0 +1,8 @@
+# Mermaid diagrams rendered with mermaid-cli (11.16.0) 2026-11-02T05:12:11Z
+OK   README.md  diagram 1: flowchart LR
+OK   docs/AGENT_PROTOCOL.md  diagram 1: sequenceDiagram
+OK   docs/ARCHITECTURE.md  diagram 1: flowchart LR
+OK   docs/ORDER_LIFECYCLE.md  diagram 1: stateDiagram-v2
+OK   docs/RECONCILIATION.md  diagram 1: flowchart TD
+OK   docs/SECURITY_ARCHITECTURE.md  diagram 1: flowchart TD
+OK   docs/STRATEGY_MATH.md  diagram 1: flowchart TD

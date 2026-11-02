@@ -1,0 +1,17 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.18, pytest-9.1.1, pluggy-1.6.0 -- /usr/local/bin/python3
+AVID source under test: /home/claude/rel/avid
+rootdir: /home/claude/rel/avid
+configfile: pyproject.toml
+plugins: platformdirs-4.13.3, anyio-4.15.1
+collecting ... collected 3 items
+
+tests/test_agent_fuzz.py::test_hostile_cloud_never_widens_local_limits[0] PASSED [ 33%]
+tests/test_agent_fuzz.py::test_hostile_cloud_never_widens_local_limits[1] PASSED [ 66%]
+tests/test_agent_fuzz.py::test_hostile_cloud_never_widens_local_limits[2] PASSED [100%]
+
+============================== 3 passed in 56.96s ==============================
+
+real	0m57.290s
+user	0m18.787s
+sys	0m10.189s

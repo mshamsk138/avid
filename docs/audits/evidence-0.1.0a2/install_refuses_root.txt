@@ -1,0 +1,5 @@
+# install refuses root (this container runs as root; no --allow-root given)
+$ HOME=<temp> python3 -m avid_agent install
+error: do not install the agent as root: it is a per-user service and needs no privileges (use your normal account; --allow-root exists only for single-user containers)
+exit 2
+files written under HOME: 0

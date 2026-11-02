@@ -1,0 +1,25 @@
+# baseline 0.1.0a1 — full suite
+2026-11-02T04:05:41Z
+Python 3.13.18 (main, Oct 26 2026, 14:08:19) [Clang 23.1.3 ]
+pytest 9.1.1 | cryptography 50.0.1 | setuptools 84.0.0
+sssss................................................................... [ 27%]
+........................................................................ [ 55%]
+........................................................................ [ 83%]
+..........................................                               [100%]
+============================= slowest 8 durations ==============================
+4.68s call     tests/test_fuzz_invariants.py::test_engine_invariants_hold_under_random_faults[0]
+4.62s call     tests/test_fuzz_invariants.py::test_engine_invariants_hold_under_random_faults[3]
+4.34s call     tests/test_fuzz_invariants.py::test_engine_invariants_hold_under_random_faults[2]
+4.25s call     tests/test_fuzz_invariants.py::test_engine_invariants_hold_under_random_faults[1]
+4.01s call     tests/test_agent_fuzz.py::test_hostile_cloud_never_widens_local_limits[0]
+3.74s call     tests/test_agent_fuzz.py::test_hostile_cloud_never_widens_local_limits[1]
+3.56s call     tests/test_agent_fuzz.py::test_hostile_cloud_never_widens_local_limits[2]
+0.89s call     tests/test_agent.py::test_should_stop_cuts_the_drain_short
+=========================== short test summary info ============================
+SKIPPED [1] tests/contract/test_nobitex_testnet.py:65: contract tests need AVID_CONTRACT_TESTNET=1, NOBITEX_NETWORK=testnet and NOBITEX_SECRETS_DIR
+SKIPPED [1] tests/contract/test_nobitex_testnet.py:86: contract tests need AVID_CONTRACT_TESTNET=1, NOBITEX_NETWORK=testnet and NOBITEX_SECRETS_DIR
+SKIPPED [1] tests/contract/test_nobitex_testnet.py:99: contract tests need AVID_CONTRACT_TESTNET=1, NOBITEX_NETWORK=testnet and NOBITEX_SECRETS_DIR
+SKIPPED [1] tests/contract/test_nobitex_testnet.py:104: contract tests need AVID_CONTRACT_TESTNET=1, NOBITEX_NETWORK=testnet and NOBITEX_SECRETS_DIR
+SKIPPED [1] tests/contract/test_nobitex_testnet.py:112: contract tests need AVID_CONTRACT_TESTNET=1, NOBITEX_NETWORK=testnet and NOBITEX_SECRETS_DIR
+253 passed, 5 skipped in 35.92s
+wall seconds: 36

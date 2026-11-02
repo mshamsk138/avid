@@ -1,0 +1,3 @@
+# environment: systemd user manager
+Failed to connect to bus: No medium found
+ls: cannot access '/run/systemd/system': No such file or directory

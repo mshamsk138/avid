@@ -1,0 +1,17 @@
+# line coverage per area, stdlib trace, pytest -q -m 'not slow' in-process (subprocess-based tests are not traced)
+2026-11-02T05:21:00Z
+342 passed, 5 skipped, 6 deselected in 69.39s (0:01:09)
+
+pytest exit code 0
+
+area                                                  lines  covered      %
+Risk (risk, control, validation)                        264      245   92.8
+Order State (cycle, orderstate, records)                819      735   89.7
+Reconciliation                                          140      131   93.6
+Ledger and files (store, fsio, events)                  351      300   85.5
+Strategy (rebalance, performance)                       373      296   79.4
+Exchange Client (client, ed25519)                       469      380   81.0
+Agent (engine, outbox, config, service, __main__)      1619     1302   80.4
+Cloud Protocol (cloud, directive)                       205      182   88.8
+CLI and simulator (cli, sim, models)                    794      704   88.7
+TOTAL                                                  5034     4275   84.9

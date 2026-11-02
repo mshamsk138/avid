@@ -1,0 +1,19 @@
+# 0.1.0a2 full suite, Python 3.12.3, pytest 9.1.1 from a pure-Python shim on PYTHONPATH (no package index here); distro cryptography; signer backend: cryptography - None
+2026-11-02T05:17:52Z
+sssss................................................................... [ 20%]
+........................................................................ [ 40%]
+............................sssss....................................... [ 61%]
+........................................................................ [ 81%]
+.................................................................        [100%]
+=========================== short test summary info ============================
+SKIPPED [1] tests/contract/test_nobitex_testnet.py:65: contract tests need AVID_CONTRACT_TESTNET=1, NOBITEX_NETWORK=testnet and NOBITEX_SECRETS_DIR
+SKIPPED [1] tests/contract/test_nobitex_testnet.py:86: contract tests need AVID_CONTRACT_TESTNET=1, NOBITEX_NETWORK=testnet and NOBITEX_SECRETS_DIR
+SKIPPED [1] tests/contract/test_nobitex_testnet.py:99: contract tests need AVID_CONTRACT_TESTNET=1, NOBITEX_NETWORK=testnet and NOBITEX_SECRETS_DIR
+SKIPPED [1] tests/contract/test_nobitex_testnet.py:104: contract tests need AVID_CONTRACT_TESTNET=1, NOBITEX_NETWORK=testnet and NOBITEX_SECRETS_DIR
+SKIPPED [1] tests/contract/test_nobitex_testnet.py:112: contract tests need AVID_CONTRACT_TESTNET=1, NOBITEX_NETWORK=testnet and NOBITEX_SECRETS_DIR
+SKIPPED [1] tests/test_packaging.py:78: setuptools >= 77 is needed to build (PEP 639 license metadata)
+SKIPPED [1] tests/test_packaging.py:98: setuptools >= 77 is needed to build (PEP 639 license metadata)
+SKIPPED [1] tests/test_packaging.py:131: setuptools >= 77 is needed to build (PEP 639 license metadata)
+SKIPPED [1] tests/test_packaging.py:143: setuptools >= 77 is needed to build (PEP 639 license metadata)
+SKIPPED [1] tests/test_packaging.py:155: setuptools >= 77 is needed to build (PEP 639 license metadata)
+343 passed, 10 skipped in 46.69s

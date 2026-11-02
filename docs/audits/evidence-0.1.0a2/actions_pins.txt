@@ -1,0 +1,11 @@
+# GitHub Actions pinned in .github/workflows, resolved with git ls-remote 2026-11-02T05:12:28Z
+# (an annotated tag is resolved through its ^{} line to the commit)
+actions/checkout v7.0.1 -> 3d3c42e5aac5ba805825da76410c181273ba90b1 ; used in workflows: 3d3c42e5aac5ba805825da76410c181273ba90b1  MATCH
+actions/setup-python v7.1.0 -> 6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 ; used in workflows: 6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  MATCH
+actions/upload-artifact v7.0.2 -> cf430e030ddbb5b0abf93d22962f4752f3646cd9 ; used in workflows: cf430e030ddbb5b0abf93d22962f4752f3646cd9  MATCH
+actions/download-artifact v8.0.2 -> 9000827ccba6bdab643e8b6fd33ac0654aef8333 ; used in workflows: 9000827ccba6bdab643e8b6fd33ac0654aef8333  MATCH
+github/codeql-action v4.39.1 -> 9b3254085494b55a0f7c4c2b3d2d52cc712ce370 ; used in workflows: 9b3254085494b55a0f7c4c2b3d2d52cc712ce370  MATCH
+actions/dependency-review-action v5.0.0 -> a1d282b36b6f3519aa1f3fc636f609c47dddb294 ; used in workflows: a1d282b36b6f3519aa1f3fc636f609c47dddb294  MATCH
+pypa/gh-action-pip-audit v1.1.0 -> 1220774d901786e6f652ae159f7b6bc8fea6d266 ; used in workflows: 1220774d901786e6f652ae159f7b6bc8fea6d266  MATCH
+pypa/gh-action-pypi-publish v1.14.3 -> 7245906fb61fa33a13554f9d5fb856fe61758086 ; used in workflows: 7245906fb61fa33a13554f9d5fb856fe61758086  MATCH
+actions/attest-build-provenance v4.2.2 -> 4d101475d8b20a2381f78447822ac1eab6504dd8 ; used in workflows: 4d101475d8b20a2381f78447822ac1eab6504dd8  MATCH

@@ -1,0 +1,22 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.18, pytest-9.1.1, pluggy-1.6.0 -- /usr/local/bin/python3
+AVID source under test: /home/claude/rel/avid
+rootdir: /home/claude/rel/avid
+configfile: pyproject.toml
+plugins: platformdirs-4.13.3, anyio-4.15.1
+collecting ... collected 8 items
+
+tests/test_fuzz_invariants.py::test_engine_invariants_hold_under_random_faults[0] PASSED [ 12%]
+tests/test_fuzz_invariants.py::test_engine_invariants_hold_under_random_faults[1] PASSED [ 25%]
+tests/test_fuzz_invariants.py::test_engine_invariants_hold_under_random_faults[2] PASSED [ 37%]
+tests/test_fuzz_invariants.py::test_engine_invariants_hold_under_random_faults[3] PASSED [ 50%]
+tests/test_fuzz_invariants.py::test_engine_invariants_hold_under_random_faults[4] PASSED [ 62%]
+tests/test_fuzz_invariants.py::test_engine_invariants_hold_under_random_faults[5] PASSED [ 75%]
+tests/test_fuzz_invariants.py::test_engine_invariants_hold_under_random_faults[6] PASSED [ 87%]
+tests/test_fuzz_invariants.py::test_engine_invariants_hold_under_random_faults[7] PASSED [100%]
+
+======================== 8 passed in 160.23s (0:02:40) =========================
+
+real	2m40.551s
+user	0m54.873s
+sys	0m33.224s

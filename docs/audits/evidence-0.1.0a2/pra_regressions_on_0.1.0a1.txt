@@ -1,0 +1,175 @@
+.........................................F.......F..F.......F.F......... [ 63%]
+...............FFF......................F                                [100%]
+=================================== FAILURES ===================================
+_______________ test_F22_live_orders_need_a_constant_time_signer _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-86/test_F22_live_orders_need_a_co0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f867b62d190>
+
+    def test_F22_live_orders_need_a_constant_time_signer(tmp_path, monkeypatch):
+        """reproduces (report 10.3, audit 33): live orders were signed by the pure-Python Ed25519.
+        0.1.0a2 (PRA-04): on mainnet there is no override at all - not even AVID_ALLOW_PURE_ED25519=1."""
+        monkeypatch.setitem(sys.modules, 'cryptography.hazmat.primitives.asymmetric.ed25519', None)
+        monkeypatch.setenv('AVID_ALLOW_PURE_ED25519', '1')       # e.g. copied from a test setup
+        ex = FakeExchange()
+        ex.auth_mode, ex.signer, ex.network = 'api_key', 'pure', 'mainnet'   # a client that signs with pure Python
+        _run(ex, tmp_path, make_cfg(), T0)
+>       assert ex.add_attempts == 0
+E       assert 1 == 0
+E        +  where 1 = <fakes.FakeExchange object at 0x7f867b625b80>.add_attempts
+
+security/test_findings.py:474: AssertionError
+________________ test_backend_falls_back_and_pure_needs_opt_in _________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f867a98ec50>
+
+    def test_backend_falls_back_and_pure_needs_opt_in(monkeypatch):
+        monkeypatch.setitem(sys.modules, 'cryptography.hazmat.primitives.asymmetric.ed25519', None)
+        assert ed25519.backend() == 'pure'
+        monkeypatch.delenv('AVID_ALLOW_PURE_ED25519', raising=False)
+>       assert not ed25519.pure_allowed('testnet')
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: pure_allowed() takes 0 positional arguments but 1 was given
+
+tests/test_ed25519.py:46: TypeError
+________________ test_broken_cryptography_install_fails_closed _________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f867a99adf0>
+
+    def test_broken_cryptography_install_fails_closed(monkeypatch):
+        """PRA-03: a cryptography built for another Python raises PanicException on import. The signer
+        must then fall back (live refused) instead of crashing every cycle - and with it STOP."""
+        import builtins
+        real_import = builtins.__import__
+    
+        def broken(name, *a, **kw):
+            if name.startswith('cryptography'):
+                raise _Panic('Python API call failed')
+            return real_import(name, *a, **kw)
+>       monkeypatch.setattr(ed25519, '_BROKEN', None)
+E       AttributeError: <module 'avid_core.ed25519' from '/home/claude/avid/avid_core/ed25519.py'> has no attribute '_BROKEN'
+
+tests/test_ed25519.py:88: AttributeError
+__________ test_disk_full_still_lets_stop_cancel_and_changes_nothing ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-86/test_disk_full_still_lets_stop0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f867a99bbb0>
+
+    def test_disk_full_still_lets_stop_cancel_and_changes_nothing(tmp_path, monkeypatch):
+        """PRA-09: with the disk full the step used to raise before the cycle, so STOP could not cancel."""
+        import errno
+        from fakes import LIVE_CEILINGS, FakeCloud, directive
+        from avid_agent.engine import Agent
+        from avid_core import fsio
+        ex = FakeExchange()
+        a = Agent(FakeCloud(directive=directive('live')), ex, tmp_path, lambda: dict(LIVE_CEILINGS), clock=lambda: T0)
+        a.step()
+        assert len(ex.open_bot_orders()) == 1
+        (a.store.dir / 'STOP').write_text('x')
+        before = Store(tmp_path).state_path.read_text()
+    
+        def full(*args, **kw):
+            raise OSError(errno.ENOSPC, 'No space left on device')
+        monkeypatch.setattr(fsio, 'atomic_write', full)
+        monkeypatch.setattr(fsio, 'append_line', full)
+>       res = a.step()                                        # must not raise
+              ^^^^^^^^
+
+tests/test_performance_and_ops.py:164: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../avid/agent/avid_agent/engine.py:220: in step
+    fresh = self._sync(ceil, now)
+            ^^^^^^^^^^^^^^^^^^^^^
+../../avid/agent/avid_agent/engine.py:406: in _sync
+    self._save_state()
+../../avid/agent/avid_agent/engine.py:168: in _save_state
+    fsio.atomic_write(self.state_path, json.dumps(self.state, default=str, allow_nan=False))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (PosixPath('/tmp/pytest-of-root/pytest-86/test_disk_full_still_lets_stop0/agent_state.json'), '{"last_sync_ok": 170000...y": 6, "max_daily_usdt": 100.0, "min_cash_usdt": 0.0, "max_spread": 0.01}}}, "has_policy": true, "last_mode": "live"}')
+kw = {}
+
+    def full(*args, **kw):
+>       raise OSError(errno.ENOSPC, 'No space left on device')
+E       OSError: [Errno 28] No space left on device
+
+tests/test_performance_and_ops.py:161: OSError
+____________________ test_shutdown_respects_its_time_budget ____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-86/test_shutdown_respects_its_tim0')
+
+    def test_shutdown_respects_its_time_budget(tmp_path):
+        from fakes import LIVE_CEILINGS, FakeCloud, directive
+        from avid_agent.engine import Agent
+        ex = FakeExchange()
+        ex.deadline = None
+        cloud = FakeCloud(directive=directive('live'))
+        a = Agent(cloud, ex, tmp_path, lambda: dict(LIVE_CEILINGS), clock=lambda: T0)
+        a.step()
+        ex.cancel_lag.add(ex.open_bot_orders()[0]['id'])         # the cancel is never applied
+        n = len(cloud.reports)
+>       res = a.safe_shutdown(budget_s=0.0)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: Agent.safe_shutdown() got an unexpected keyword argument 'budget_s'
+
+tests/test_performance_and_ops.py:200: TypeError
+________________ test_deadline_stops_sending_and_says_not_sent _________________
+
+    def test_deadline_stops_sending_and_says_not_sent():
+        now = [100.0]
+>       c = NobitexClient(token='x' * 8, opener=opener_for(Resp({'status': 'ok', 'wallets': []})), sleep=lambda s: None,
+                          monotonic=lambda: now[0])
+E       TypeError: NobitexClient.__init__() got an unexpected keyword argument 'monotonic'
+
+tests/test_client.py:168: TypeError
+____________________ test_no_retry_sleep_past_the_deadline _____________________
+
+    def test_no_retry_sleep_past_the_deadline():
+        now = [0.0]
+        err = urllib.error.HTTPError('https://apiv2.nobitex.ir/x', 503, 'Down', {}, io.BytesIO(b'{}'))
+        slept = []
+>       c = NobitexClient(token='x' * 8, opener=opener_for(err), sleep=slept.append, monotonic=lambda: now[0])
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: NobitexClient.__init__() got an unexpected keyword argument 'monotonic'
+
+tests/test_client.py:185: TypeError
+_________________________ test_signer_and_market_specs _________________________
+
+    def test_signer_and_market_specs():
+>       assert NobitexClient(token='x' * 8).signer == 'none'
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'NobitexClient' object has no attribute 'signer'
+
+tests/test_client.py:193: AttributeError
+________ test_pure_signer_allowed_only_on_testnet_with_explicit_opt_in _________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-86/test_pure_signer_allowed_only_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f867a7319d0>
+
+    def test_pure_signer_allowed_only_on_testnet_with_explicit_opt_in(tmp_path, monkeypatch):
+        for network, env, placed in (('testnet', '1', True), ('testnet', None, False), ('mainnet', '1', False)):
+            ex, cfg = FakeExchange(), make_cfg()
+            ex.signer, ex.network = 'pure', network
+            if env:
+                monkeypatch.setenv('AVID_ALLOW_PURE_ED25519', env)
+            else:
+                monkeypatch.delenv('AVID_ALLOW_PURE_ED25519', raising=False)
+            root = tmp_path / f'{network}-{env}'
+            run(ex, root, cfg, T0)
+>           assert (ex.add_attempts == 1) is placed, (network, env)
+E           AssertionError: ('testnet', None)
+E           assert (1 == 1) is False
+E            +  where 1 = <fakes.FakeExchange object at 0x7f867b626120>.add_attempts
+
+tests/test_order_state.py:256: AssertionError
+=========================== short test summary info ============================
+FAILED security/test_findings.py::test_F22_live_orders_need_a_constant_time_signer
+FAILED tests/test_ed25519.py::test_backend_falls_back_and_pure_needs_opt_in
+FAILED tests/test_ed25519.py::test_broken_cryptography_install_fails_closed
+FAILED tests/test_performance_and_ops.py::test_disk_full_still_lets_stop_cancel_and_changes_nothing
+FAILED tests/test_performance_and_ops.py::test_shutdown_respects_its_time_budget
+FAILED tests/test_client.py::test_deadline_stops_sending_and_says_not_sent - ...
+FAILED tests/test_client.py::test_no_retry_sleep_past_the_deadline - TypeErro...
+FAILED tests/test_client.py::test_signer_and_market_specs - AttributeError: '...
+FAILED tests/test_order_state.py::test_pure_signer_allowed_only_on_testnet_with_explicit_opt_in
+9 failed, 104 passed in 1.58s

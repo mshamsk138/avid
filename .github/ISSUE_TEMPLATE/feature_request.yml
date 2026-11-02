@@ -1,0 +1,26 @@
+name: Feature request
+description: Suggest a change or an addition
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: Read docs/ROADMAP.md first. AVID keeps fixed weights on Nobitex; leverage, market orders, withdrawals and price prediction are out of scope.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem it solves
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+    validations:
+      required: true
+  - type: textarea
+    id: risk
+    attributes:
+      label: Effect on safety
+      description: Does it touch orders, limits, the state machine, the ledger, reconciliation, the cloud protocol or STOP? How could it fail, and what should happen then (fail closed)?
+    validations:
+      required: true

@@ -1,0 +1,8 @@
+# sdist contents beyond the packages: everything needed to run the tests and read the docs
+include LICENSE *.md conftest.py requirements-dev.txt
+recursive-include tests *.py
+recursive-include security *.py *.md
+recursive-include docs *.md *.svg *.mmd
+recursive-include scripts *
+recursive-include .github *.yml *.md
+global-exclude __pycache__ *.py[cod] *.so .DS_Store

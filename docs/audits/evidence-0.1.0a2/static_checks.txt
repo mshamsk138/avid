@@ -1,0 +1,25 @@
+# static checks 2026-11-02T05:21:00Z
+$ python3 -I scripts/check-syntax.py .
+57 Python files parsed with the Python 3.10 grammar
+exit 0
+$ python3 -I scripts/check-links.py .
+31 Markdown files, 227 links checked, 6 external links not fetched
+exit 0
+$ python3 -I scripts/check-secrets.py .
+0 finding(s)
+exit 0
+$ python3 -m compileall -q avid_core agent scripts tests security conftest.py
+exit 0
+$ bash -n scripts/avid-agent
+exit 0
+$ YAML parse of .github/**/*.yml (PyYAML safe_load)
+ok .github/ISSUE_TEMPLATE/bug_report.yml
+ok .github/ISSUE_TEMPLATE/config.yml
+ok .github/ISSUE_TEMPLATE/documentation.yml
+ok .github/ISSUE_TEMPLATE/feature_request.yml
+ok .github/dependabot.yml
+ok .github/workflows/ci.yml
+ok .github/workflows/codeql.yml
+ok .github/workflows/fuzz.yml
+ok .github/workflows/release.yml
+exit 0

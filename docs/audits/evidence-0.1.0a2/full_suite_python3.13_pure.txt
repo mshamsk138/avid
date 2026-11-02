@@ -1,0 +1,16 @@
+# 0.1.0a2 full suite, Python 3.13.18 WITHOUT cryptography (an import-blocking shim on PYTHONPATH); signer backend: pure; AVID_ALLOW_PURE_ED25519 not set
+2026-11-02T05:16:55Z
+sssss................................................................... [ 20%]
+.........................................sss............................ [ 40%]
+................................s....................................... [ 61%]
+........................................................................ [ 81%]
+.................................................................        [100%]
+=========================== short test summary info ============================
+SKIPPED [1] tests/contract/test_nobitex_testnet.py:65: contract tests need AVID_CONTRACT_TESTNET=1, NOBITEX_NETWORK=testnet and NOBITEX_SECRETS_DIR
+SKIPPED [1] tests/contract/test_nobitex_testnet.py:86: contract tests need AVID_CONTRACT_TESTNET=1, NOBITEX_NETWORK=testnet and NOBITEX_SECRETS_DIR
+SKIPPED [1] tests/contract/test_nobitex_testnet.py:99: contract tests need AVID_CONTRACT_TESTNET=1, NOBITEX_NETWORK=testnet and NOBITEX_SECRETS_DIR
+SKIPPED [1] tests/contract/test_nobitex_testnet.py:104: contract tests need AVID_CONTRACT_TESTNET=1, NOBITEX_NETWORK=testnet and NOBITEX_SECRETS_DIR
+SKIPPED [1] tests/contract/test_nobitex_testnet.py:112: contract tests need AVID_CONTRACT_TESTNET=1, NOBITEX_NETWORK=testnet and NOBITEX_SECRETS_DIR
+SKIPPED [3] tests/test_ed25519.py:31: could not import 'cryptography': cryptography disabled for this test run
+SKIPPED [1] tests/test_packaging.py:159: cryptography is not installed here; the [live] extra needs a package index
+344 passed, 9 skipped in 56.87s

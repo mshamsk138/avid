@@ -1,0 +1,14 @@
+# PRA-01 reproduction on 0.1.0a1 (source checkout, no pip install): the Python 'avid-agent' entry point
+$ python3 -m avid_agent install
+                  {pair,ceilings,once,run,status,safe-stop,resolve,reset-cid} ...
+avid-agent: error: argument cmd: invalid choice: 'install' (choose from 'pair', 'ceilings', 'once', 'run', 'status', 'safe-stop', 'resolve', 'reset-cid')
+exit status of the command: 2 (argparse usage error)
+$ python3 -m avid_agent stop
+avid-agent: error: argument cmd: invalid choice: 'stop' (choose from 'pair', 'ceilings', 'once', 'run', 'status', 'safe-stop', 'resolve', 'reset-cid')
+$ grep avid-engine pyproject.toml (0.1.0a1)
+27:avid-agent = "avid_agent.__main__:main"
+28:avid-engine = "avid_core.cycle:main"
+$ python3 -m avid_core.cycle simulate
+nobitex_bot: error: argument cmd: invalid choice: 'simulate' (choose from 'check', 'plan', 'run')
+$ grep ExecStart scripts/avid-agent (0.1.0a1)
+51:ExecStart="$SELF" run

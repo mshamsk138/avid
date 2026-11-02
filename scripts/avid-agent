@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# AVID Private Agent - wrapper for a SOURCE CHECKOUT (no pip install needed).
+#
+# After `pip install avid-rebalancer` the `avid-agent` command already exists and does the same; this
+# script only puts the checkout on PYTHONPATH and runs the same Python CLI. Every command
+# (install, uninstall, pair, once, start, stop, restart, status, logs, ceilings, resolve, help) is
+# implemented in agent/avid_agent (see `avid-agent help`).
+#
+# Needs python3 (>= 3.10). Live orders also need python3-cryptography (constant-time Ed25519).
+# The Nobitex API key stays in ~/.nobitex (chmod 600) and is never sent to the cloud.
+set -euo pipefail
+umask 077
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"
+ROOT="$(cd "$(dirname "$SELF")/.." && pwd)"
+PY="${AVID_PYTHON:-python3}"
+command -v "$PY" >/dev/null || { echo "python3 is required: sudo apt install -y python3" >&2; exit 2; }
+"$PY" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)' \
+  || { echo "python3 >= 3.10 is required" >&2; exit 2; }
+export AVID_AGENT_WRAPPER="$SELF"          # `install` links this script into ~/.local/bin
+PYTHONPATH="$ROOT:$ROOT/agent${PYTHONPATH:+:$PYTHONPATH}" exec "$PY" -m avid_agent "$@"

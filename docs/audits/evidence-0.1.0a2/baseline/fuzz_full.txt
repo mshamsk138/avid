@@ -1,0 +1,8 @@
+# baseline 0.1.0a1 — engine fuzz 10000 steps x 8 seeds (the scheduled-CI campaign) + agent fuzz 2000 steps x 3 seeds
+2026-11-02T04:06:29Z
+........                                                                 [100%]
+8 passed in 169.40s (0:02:49)
+engine fuzz wall seconds: 170
+...                                                                      [100%]
+3 passed in 60.68s (0:01:00)
+agent fuzz wall seconds: 61

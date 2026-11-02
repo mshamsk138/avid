@@ -1,0 +1,133 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Least privilege: every job only reads the repository. No secret is used anywhere in this workflow,
+# so pull requests from forks run with nothing to steal (pull_request, never pull_request_target).
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: syntax, docs links, scripts
+    runs-on: ubuntu-latest
+    steps:
+      # every action is pinned to a full commit SHA; the comment names the release it corresponds to
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0   # v7.1.0
+        with:
+          python-version: '3.13'
+      - name: byte-compile everything
+        run: python -m compileall -q avid_core agent scripts tests security conftest.py
+      - name: Python 3.10 grammar
+        run: python -I scripts/check-syntax.py .
+      - name: Markdown links (relative links and anchors)
+        run: python -I scripts/check-links.py .
+      - name: shell scripts parse
+        run: bash -n scripts/avid-agent
+
+  test:
+    name: tests (py${{ matrix.python }}, ${{ matrix.signer }} signer)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.10', '3.11', '3.12', '3.13']
+        signer: ['cryptography', 'pure']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0   # v7.1.0
+        with:
+          python-version: ${{ matrix.python }}
+      - name: install pinned test dependencies
+        env:
+          SIGNER: ${{ matrix.signer }}
+        run: |
+          python -m pip install --disable-pip-version-check pytest==9.1.1 setuptools==80.9.0
+          if [ "$SIGNER" = "cryptography" ]; then
+            python -m pip install --disable-pip-version-check cryptography==50.0.1
+          fi
+          python -c "from avid_core import ed25519; print('signer backend:', ed25519.backend())"
+      # no AVID_ALLOW_PURE_ED25519 here: the pure signer is refused for live orders except on the official
+      # testnet, and the tests prove that refusal in both matrix legs
+      - name: unit, integration, state machine, property, fuzz (short), failure injection, security
+        run: python -m pytest -q -m "not slow"
+      - name: packaging (build, clean venv install, both commands)
+        run: python -m pytest -q -m slow
+
+  package:
+    name: build, install the wheel, CLI smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0   # v7.1.0
+        with:
+          python-version: '3.12'
+      - name: build sdist, wheel, SBOM and checksums
+        run: |
+          python -m pip install --disable-pip-version-check setuptools==80.9.0
+          python scripts/build-dist.py --out dist
+          cat dist/SHA256SUMS
+      - name: install the wheel into a clean virtual environment (no PYTHONPATH)
+        run: |
+          python -m venv /tmp/clean
+          /tmp/clean/bin/python -m pip install --disable-pip-version-check --no-index --no-deps dist/*.whl
+          cd /tmp
+          env -u PYTHONPATH /tmp/clean/bin/avid-engine --version
+          env -u PYTHONPATH /tmp/clean/bin/avid-engine simulate --example btc-usdt
+          env -u PYTHONPATH /tmp/clean/bin/avid-engine simulate --example btc-usdt --json > /tmp/sim.json
+          python -c "import json; r = json.load(open('/tmp/sim.json')); assert r['kind'] == 'SIMULATION' and r['errors'] == 0"
+          env -u PYTHONPATH /tmp/clean/bin/avid-agent --version
+          env -u PYTHONPATH /tmp/clean/bin/avid-agent help
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9   # v7.0.2
+        with:
+          name: dist
+          path: dist/
+          retention-days: 14
+          if-no-files-found: error
+
+  security:
+    name: secret scan, dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: scan the tree and the whole git history for credentials
+        run: |
+          python3 -I scripts/check-secrets.py .
+          git log -p --all | python3 -I scripts/check-secrets.py -
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0   # v7.1.0
+        with:
+          python-version: '3.12'
+      # AVID has no runtime dependencies; the audited set is the pinned test/live dependencies
+      - uses: pypa/gh-action-pip-audit@1220774d901786e6f652ae159f7b6bc8fea6d266   # v1.1.0
+        with:
+          inputs: requirements-dev.txt
+
+  dependency-review:
+    name: dependency review (pull requests)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294   # v5.0.0
+        with:
+          fail-on-severity: moderate

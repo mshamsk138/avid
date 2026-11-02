@@ -1,0 +1,61 @@
+name: Bug report
+description: Something does not work as documented (not a security problem - see SECURITY.md for those)
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Security problems go to SECURITY.md, not here**: an unwanted or duplicated order, a stop that did not
+        stop, a wrong financial record, a leaked key. Remove API keys, the agent key, balances, order ids and
+        account details from everything you paste.
+  - type: input
+    id: version
+    attributes:
+      label: AVID version
+      description: output of `avid-engine --version` / `avid-agent --version`
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where
+      options: [avid-engine (standalone), avid-agent (service), offline simulation, installation / packaging, documentation, other]
+    validations:
+      required: true
+  - type: dropdown
+    id: network
+    attributes:
+      label: Network
+      options: [simulation (no exchange), Nobitex testnet, Nobitex mainnet, not applicable]
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Linux distribution, Python version, `cryptography` installed or not, pip / source checkout
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what you expected
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce
+      description: Ideally an `avid-engine simulate --scenario` file or a pytest test against tests/fakes.py
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log events (redacted)
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I removed keys, balances, order ids and account details from this report
+          required: true
+        - label: This is not a security problem (those go to SECURITY.md)
+          required: true

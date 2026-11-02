@@ -1,0 +1,184 @@
+{
+  "pytest_exit_code": 0,
+  "pytest_args": [
+    "-q",
+    "-m",
+    "not slow",
+    "-p",
+    "no:cacheprovider"
+  ],
+  "areas": {
+    "Risk (risk, control, validation)": {
+      "lines": 264,
+      "covered": 245,
+      "percent": 92.8
+    },
+    "Order State (cycle, orderstate, records)": {
+      "lines": 819,
+      "covered": 735,
+      "percent": 89.7
+    },
+    "Reconciliation": {
+      "lines": 140,
+      "covered": 131,
+      "percent": 93.6
+    },
+    "Ledger and files (store, fsio, events)": {
+      "lines": 351,
+      "covered": 300,
+      "percent": 85.5
+    },
+    "Strategy (rebalance, performance)": {
+      "lines": 373,
+      "covered": 296,
+      "percent": 79.4
+    },
+    "Exchange Client (client, ed25519)": {
+      "lines": 469,
+      "covered": 380,
+      "percent": 81.0
+    },
+    "Agent (engine, outbox, config, service, __main__)": {
+      "lines": 1619,
+      "covered": 1302,
+      "percent": 80.4
+    },
+    "Cloud Protocol (cloud, directive)": {
+      "lines": 205,
+      "covered": 182,
+      "percent": 88.8
+    },
+    "CLI and simulator (cli, sim, models)": {
+      "lines": 794,
+      "covered": 704,
+      "percent": 88.7
+    }
+  },
+  "files": {
+    "avid_core/risk.py": {
+      "lines": 37,
+      "covered": 35,
+      "percent": 94.6
+    },
+    "avid_core/control.py": {
+      "lines": 118,
+      "covered": 108,
+      "percent": 91.5
+    },
+    "avid_core/validation.py": {
+      "lines": 109,
+      "covered": 102,
+      "percent": 93.6
+    },
+    "avid_core/cycle.py": {
+      "lines": 678,
+      "covered": 613,
+      "percent": 90.4
+    },
+    "avid_core/orderstate.py": {
+      "lines": 53,
+      "covered": 50,
+      "percent": 94.3
+    },
+    "avid_core/records.py": {
+      "lines": 88,
+      "covered": 72,
+      "percent": 81.8
+    },
+    "avid_core/reconcile.py": {
+      "lines": 140,
+      "covered": 131,
+      "percent": 93.6
+    },
+    "avid_core/store.py": {
+      "lines": 245,
+      "covered": 223,
+      "percent": 91.0
+    },
+    "avid_core/fsio.py": {
+      "lines": 93,
+      "covered": 77,
+      "percent": 82.8
+    },
+    "avid_core/events.py": {
+      "lines": 13,
+      "covered": 0,
+      "percent": 0.0
+    },
+    "avid_core/rebalance.py": {
+      "lines": 232,
+      "covered": 186,
+      "percent": 80.2
+    },
+    "avid_core/performance.py": {
+      "lines": 141,
+      "covered": 110,
+      "percent": 78.0
+    },
+    "avid_core/client.py": {
+      "lines": 345,
+      "covered": 265,
+      "percent": 76.8
+    },
+    "avid_core/ed25519.py": {
+      "lines": 124,
+      "covered": 115,
+      "percent": 92.7
+    },
+    "agent/avid_agent/engine.py": {
+      "lines": 603,
+      "covered": 506,
+      "percent": 83.9
+    },
+    "agent/avid_agent/outbox.py": {
+      "lines": 281,
+      "covered": 250,
+      "percent": 89.0
+    },
+    "agent/avid_agent/config.py": {
+      "lines": 153,
+      "covered": 127,
+      "percent": 83.0
+    },
+    "agent/avid_agent/service.py": {
+      "lines": 285,
+      "covered": 257,
+      "percent": 90.2
+    },
+    "agent/avid_agent/__main__.py": {
+      "lines": 297,
+      "covered": 162,
+      "percent": 54.5
+    },
+    "agent/avid_agent/cloud.py": {
+      "lines": 145,
+      "covered": 129,
+      "percent": 89.0
+    },
+    "agent/avid_agent/directive.py": {
+      "lines": 60,
+      "covered": 53,
+      "percent": 88.3
+    },
+    "avid_core/cli.py": {
+      "lines": 334,
+      "covered": 277,
+      "percent": 82.9
+    },
+    "avid_core/sim.py": {
+      "lines": 374,
+      "covered": 342,
+      "percent": 91.4
+    },
+    "avid_core/models.py": {
+      "lines": 86,
+      "covered": 85,
+      "percent": 98.8
+    }
+  },
+  "total": {
+    "lines": 5034,
+    "covered": 4275,
+    "percent": 84.9
+  }
+}

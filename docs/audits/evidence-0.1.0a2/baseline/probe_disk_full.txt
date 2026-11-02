@@ -1,0 +1,4 @@
+# baseline 0.1.0a1 — probe: STOP under disk full (ENOSPC injected into fsio.atomic_write/append_line)
+step raised OSError [Errno 28] No space left on device
+open bot orders after STOP under disk-full: [1000]
+1 passed in 0.07s

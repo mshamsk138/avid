@@ -1,0 +1,746 @@
+FFF.FFF.....FFFFFFFF.FFFFFFFFFF..FFFFFFFFFFF                             [100%]
+=================================== FAILURES ===================================
+_________ test_F01_unknown_order_status_never_releases_the_reservation _________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F01_unknown_order_status_0')
+
+    def test_F01_unknown_order_status_never_releases_the_reservation(tmp_path):
+        """reproduces AVID-01: an unrecognised status with unmatchedAmount>0 was treated as 'canceled',
+        the reserved notional was released and a second order was placed while the first was still live."""
+        ex, cfg = FakeExchange(usdt=100.0), make_cfg()
+        r = cycle(ex, Store(tmp_path), cfg, live=True, now=T0)
+        assert r['event'] == 'order_placed'
+        oid = int(r['id'])
+        reserved = Store(tmp_path).load()['notional_today']
+        ex.hide_open.add(oid)                                   # left the open list (lag) ...
+        ex.status_patch[oid] = {'status': 'Expiring'}           # ... and the status record is not understood
+        _run(ex, tmp_path, cfg, T0 + 60)
+        _run(ex, tmp_path, cfg, T0 + 120)
+        st = Store(tmp_path).load()
+        assert st['notional_today'] >= reserved - 1e-9, 'reservation released without a confirmed final state'
+>       assert ex.add_attempts == 1, 'a new order was sent while the previous one was ambiguous'
+E       AssertionError: a new order was sent while the previous one was ambiguous
+E       assert 2 == 1
+E        +  where 2 = <fakes.FakeExchange object at 0x7f279f679e80>.add_attempts
+
+security/test_findings.py:64: AssertionError
+________ test_F02_invalid_local_ceiling_is_rejected[max_daily_usdt-NaN] ________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F02_invalid_local_ceiling0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f279f56a9e0>
+field = 'max_daily_usdt', value = 'NaN'
+
+    @pytest.mark.parametrize('field,value', [
+        ('max_daily_usdt', 'NaN'), ('max_daily_usdt', 'Infinity'), ('max_daily_usdt', '-Infinity'),
+        ('max_daily_usdt', '1e309'), ('max_order_usdt', 'NaN'), ('max_orders_per_day', '6.7'),
+        ('max_orders_per_day', 'NaN'), ('max_daily_usdt', 'true'), ('max_daily_usdt', '"20"'),
+        ('max_daily_usdt', '-1'), ('max_daily_usdt', '0')])
+    def test_F02_invalid_local_ceiling_is_rejected(tmp_path, monkeypatch, field, value):
+        """reproduces AVID-02 for NaN / Infinity / 1e309 / 6.7 (accepted by v1.2)."""
+        from avid_agent import config
+        monkeypatch.setattr(config, 'HOME', tmp_path)
+        base = {'live_allowed': True, 'max_order_usdt': 20, 'max_orders_per_day': 6, 'max_daily_usdt': 100}
+        text = json.dumps(base).replace(f'"{field}": {json.dumps(base[field])}', f'"{field}": {value}')
+        (tmp_path / 'ceilings.json').write_text(text)
+        os.chmod(tmp_path / 'ceilings.json', 0o600)
+>       with pytest.raises((config.ConfigError, ValueError)):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE any of (ConfigError, ValueError)
+
+security/test_findings.py:82: Failed
+_____ test_F02_invalid_local_ceiling_is_rejected[max_daily_usdt-Infinity] ______
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F02_invalid_local_ceiling1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f279f56a8b0>
+field = 'max_daily_usdt', value = 'Infinity'
+
+    @pytest.mark.parametrize('field,value', [
+        ('max_daily_usdt', 'NaN'), ('max_daily_usdt', 'Infinity'), ('max_daily_usdt', '-Infinity'),
+        ('max_daily_usdt', '1e309'), ('max_order_usdt', 'NaN'), ('max_orders_per_day', '6.7'),
+        ('max_orders_per_day', 'NaN'), ('max_daily_usdt', 'true'), ('max_daily_usdt', '"20"'),
+        ('max_daily_usdt', '-1'), ('max_daily_usdt', '0')])
+    def test_F02_invalid_local_ceiling_is_rejected(tmp_path, monkeypatch, field, value):
+        """reproduces AVID-02 for NaN / Infinity / 1e309 / 6.7 (accepted by v1.2)."""
+        from avid_agent import config
+        monkeypatch.setattr(config, 'HOME', tmp_path)
+        base = {'live_allowed': True, 'max_order_usdt': 20, 'max_orders_per_day': 6, 'max_daily_usdt': 100}
+        text = json.dumps(base).replace(f'"{field}": {json.dumps(base[field])}', f'"{field}": {value}')
+        (tmp_path / 'ceilings.json').write_text(text)
+        os.chmod(tmp_path / 'ceilings.json', 0o600)
+>       with pytest.raises((config.ConfigError, ValueError)):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE any of (ConfigError, ValueError)
+
+security/test_findings.py:82: Failed
+_______ test_F02_invalid_local_ceiling_is_rejected[max_daily_usdt-1e309] _______
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F02_invalid_local_ceiling3')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f279f559bf0>
+field = 'max_daily_usdt', value = '1e309'
+
+    @pytest.mark.parametrize('field,value', [
+        ('max_daily_usdt', 'NaN'), ('max_daily_usdt', 'Infinity'), ('max_daily_usdt', '-Infinity'),
+        ('max_daily_usdt', '1e309'), ('max_order_usdt', 'NaN'), ('max_orders_per_day', '6.7'),
+        ('max_orders_per_day', 'NaN'), ('max_daily_usdt', 'true'), ('max_daily_usdt', '"20"'),
+        ('max_daily_usdt', '-1'), ('max_daily_usdt', '0')])
+    def test_F02_invalid_local_ceiling_is_rejected(tmp_path, monkeypatch, field, value):
+        """reproduces AVID-02 for NaN / Infinity / 1e309 / 6.7 (accepted by v1.2)."""
+        from avid_agent import config
+        monkeypatch.setattr(config, 'HOME', tmp_path)
+        base = {'live_allowed': True, 'max_order_usdt': 20, 'max_orders_per_day': 6, 'max_daily_usdt': 100}
+        text = json.dumps(base).replace(f'"{field}": {json.dumps(base[field])}', f'"{field}": {value}')
+        (tmp_path / 'ceilings.json').write_text(text)
+        os.chmod(tmp_path / 'ceilings.json', 0o600)
+>       with pytest.raises((config.ConfigError, ValueError)):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE any of (ConfigError, ValueError)
+
+security/test_findings.py:82: Failed
+________ test_F02_invalid_local_ceiling_is_rejected[max_order_usdt-NaN] ________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F02_invalid_local_ceiling4')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f279f55a580>
+field = 'max_order_usdt', value = 'NaN'
+
+    @pytest.mark.parametrize('field,value', [
+        ('max_daily_usdt', 'NaN'), ('max_daily_usdt', 'Infinity'), ('max_daily_usdt', '-Infinity'),
+        ('max_daily_usdt', '1e309'), ('max_order_usdt', 'NaN'), ('max_orders_per_day', '6.7'),
+        ('max_orders_per_day', 'NaN'), ('max_daily_usdt', 'true'), ('max_daily_usdt', '"20"'),
+        ('max_daily_usdt', '-1'), ('max_daily_usdt', '0')])
+    def test_F02_invalid_local_ceiling_is_rejected(tmp_path, monkeypatch, field, value):
+        """reproduces AVID-02 for NaN / Infinity / 1e309 / 6.7 (accepted by v1.2)."""
+        from avid_agent import config
+        monkeypatch.setattr(config, 'HOME', tmp_path)
+        base = {'live_allowed': True, 'max_order_usdt': 20, 'max_orders_per_day': 6, 'max_daily_usdt': 100}
+        text = json.dumps(base).replace(f'"{field}": {json.dumps(base[field])}', f'"{field}": {value}')
+        (tmp_path / 'ceilings.json').write_text(text)
+        os.chmod(tmp_path / 'ceilings.json', 0o600)
+>       with pytest.raises((config.ConfigError, ValueError)):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE any of (ConfigError, ValueError)
+
+security/test_findings.py:82: Failed
+______ test_F02_invalid_local_ceiling_is_rejected[max_orders_per_day-6.7] ______
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F02_invalid_local_ceiling5')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f279f582f50>
+field = 'max_orders_per_day', value = '6.7'
+
+    @pytest.mark.parametrize('field,value', [
+        ('max_daily_usdt', 'NaN'), ('max_daily_usdt', 'Infinity'), ('max_daily_usdt', '-Infinity'),
+        ('max_daily_usdt', '1e309'), ('max_order_usdt', 'NaN'), ('max_orders_per_day', '6.7'),
+        ('max_orders_per_day', 'NaN'), ('max_daily_usdt', 'true'), ('max_daily_usdt', '"20"'),
+        ('max_daily_usdt', '-1'), ('max_daily_usdt', '0')])
+    def test_F02_invalid_local_ceiling_is_rejected(tmp_path, monkeypatch, field, value):
+        """reproduces AVID-02 for NaN / Infinity / 1e309 / 6.7 (accepted by v1.2)."""
+        from avid_agent import config
+        monkeypatch.setattr(config, 'HOME', tmp_path)
+        base = {'live_allowed': True, 'max_order_usdt': 20, 'max_orders_per_day': 6, 'max_daily_usdt': 100}
+        text = json.dumps(base).replace(f'"{field}": {json.dumps(base[field])}', f'"{field}": {value}')
+        (tmp_path / 'ceilings.json').write_text(text)
+        os.chmod(tmp_path / 'ceilings.json', 0o600)
+>       with pytest.raises((config.ConfigError, ValueError)):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE any of (ConfigError, ValueError)
+
+security/test_findings.py:82: Failed
+__________ test_F02b_control_file_rejects_non_finite_risk_parameters ___________
+
+    def test_F02b_control_file_rejects_non_finite_risk_parameters():
+        """reproduces AVID-02 (cloud/control path): max_spread / min_cash_usdt were never validated."""
+        from avid_core import control
+        for bad in ({'max_spread': float('nan')}, {'min_cash_usdt': float('nan')}, {'max_spread': 5.0}):
+>           with pytest.raises(ValueError):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE ValueError
+
+security/test_findings.py:90: Failed
+_______ test_F03_asset_removed_from_targets_stays_in_the_portfolio_value _______
+
+    def test_F03_asset_removed_from_targets_stays_in_the_portfolio_value():
+        """reproduces AVID-03: PAXG left out of the targets vanished from the NAV and was never sold."""
+        from avid_core.rebalance import plan_multi
+        p = plan_multi(balances={'btc': 0.001, 'paxg': 0.025, 'usdt': 60.0},
+                       books={'btc': (59990.0, 60010.0), 'paxg': (2399.0, 2401.0)},
+                       targets={'btc': 0.5, 'usdt': 0.5}, min_order_usdt=11.5, max_order_usdt=20.0)
+>       assert abs(p.value_usdt - 180.0) < 0.5, f'NAV {p.value_usdt} ignores the PAXG holding'
+E       AssertionError: NAV 120.0 ignores the PAXG holding
+E       assert 60.0 < 0.5
+E        +  where 60.0 = abs((120.0 - 180.0))
+E        +    where 120.0 = MultiPlan(action='none', reason='all assets inside ±25% band', weights={'btc': 0.5, 'usdt': 0.5}, value_usdt=120.0, asset='', market='', amount=0.0, price=0.0, notional_usdt=0.0).value_usdt
+
+security/test_findings.py:101: AssertionError
+_____________________ test_F04_log_rotation_loses_no_event _____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F04_log_rotation_loses_no0')
+
+    def test_F04_log_rotation_loses_no_event(tmp_path):
+        """reproduces AVID-04: after a rotation the new file grew past the old offset and the agent
+        started reading in the middle of it."""
+        agent = _agent(FakeCloud(), FakeExchange(), tmp_path)
+        st = agent.store
+        for i in range(20):
+            st.log('waiting', reason=f'old-{i:03d}')
+        agent._collect_log()
+        st.log_path.replace(st.log_path.with_suffix('.jsonl.1'))
+        for i in range(40):
+            st.log('waiting', reason=f'new-{i:03d}')
+        agent._collect_log()
+        batch, _ = agent.outbox.batch(100_000, 10**9)
+        seen = {e.get('message') for e in batch['events']}
+        missing = [f'new-{i:03d}' for i in range(40) if f'new-{i:03d}' not in seen]
+>       assert not missing, f'{len(missing)} events after the rotation were never queued'
+E       AssertionError: 20 events after the rotation were never queued
+E       assert not ['new-000', 'new-001', 'new-002', 'new-003', 'new-004', 'new-005', ...]
+
+security/test_findings.py:121: AssertionError
+_________________ test_F05_full_queue_never_drops_error_events _________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F05_full_queue_never_drop0')
+
+    def test_F05_full_queue_never_drops_error_events(tmp_path):
+        """reproduces AVID-05: with a cap of one item both error events were deleted."""
+        from avid_agent.outbox import Outbox
+        ob = Outbox(tmp_path / 'o.sqlite3', max_items=1)
+        ob.put('events', _err(1))
+        ob.put('events', _err(2))
+>       assert len(ob) == 2
+E       assert 0 == 2
+E        +  where 0 = len(<avid_agent.outbox.Outbox object at 0x7f279f4d4a50>)
+
+security/test_findings.py:135: AssertionError
+________________ test_F05b_eviction_removes_only_what_is_needed ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F05b_eviction_removes_onl0')
+
+    def test_F05b_eviction_removes_only_what_is_needed(tmp_path):
+        """reproduces AVID-05: one item over the cap deleted up to 500 items."""
+        from avid_agent.outbox import Outbox
+        ob = Outbox(tmp_path / 'o.sqlite3', max_items=10)
+        for i in range(11):
+            ob.put('snapshots', {'key': f's{i}', 'at': i, 'balances': {}, 'books': {}, 'value_usdt': 0})
+>       assert len(ob) == 10
+E       assert 0 == 10
+E        +  where 0 = len(<avid_agent.outbox.Outbox object at 0x7f279f4d4cd0>)
+
+security/test_findings.py:144: AssertionError
+__________ test_F16_oversized_order_record_is_never_dropped_silently ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F16_oversized_order_recor0')
+
+    def test_F16_oversized_order_record_is_never_dropped_silently(tmp_path):
+        """reproduces (audit 4.10/58): an order record over 16 KB was discarded without a trace."""
+        from avid_agent.outbox import Outbox
+        ob = Outbox(tmp_path / 'o.sqlite3')
+        ob.put('orders', {'exchange_order_id': '1', 'intent_key': 'oid:1', 'status': 'filled', 'note': 'x' * 20_000})
+>       assert len(ob) == 1
+E       assert 0 == 1
+E        +  where 0 = len(<avid_agent.outbox.Outbox object at 0x7f279f56be10>)
+
+security/test_findings.py:152: AssertionError
+____________ test_F06_http_200_without_a_valid_ack_deletes_nothing _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F06_http_200_without_a_va0')
+
+    def test_F06_http_200_without_a_valid_ack_deletes_nothing(tmp_path):
+        """reproduces AVID-06: {"error": "unexpected result"} with HTTP 200 emptied the queue."""
+        cloud = FakeCloud()
+        cloud.respond = lambda report: {'error': 'unexpected result'}
+        agent = _agent(cloud, FakeExchange(), tmp_path)
+        agent.outbox.put('events', {'key': 'k-important', 'at': 1, 'kind': 'error', 'level': 'error',
+                                    'message': 'must reach the cloud', 'data': {}})
+        res = agent.step(now=T0)
+        batch, _ = agent.outbox.batch(1000, 10**9)
+>       assert any(e.get('message') == 'must reach the cloud' for e in batch['events'])
+E       assert False
+E        +  where False = any(<generator object test_F06_http_200_without_a_valid_ack_deletes_nothing.<locals>.<genexpr> at 0x7f279f401ff0>)
+
+security/test_findings.py:165: AssertionError
+____________ test_F06b_partial_ack_deletes_only_acknowledged_items _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F06b_partial_ack_deletes_0')
+
+    def test_F06b_partial_ack_deletes_only_acknowledged_items(tmp_path):
+        """reproduces AVID-06: every sent item was deleted, whatever the cloud said it stored."""
+        cloud = FakeCloud()
+    
+        def partial(report):
+            keys = [e['item_key'] for e in report.get('events') or [] if e.get('item_key')]
+            stored = [k for k in keys if k.endswith(':e1')]          # the cloud stored only the first event
+            resp = {'protocol': 2, 'agent_id': cloud.agent_id, 'batch_id': report.get('batch_id'),
+                    'ack': {'accepted': stored, 'rejected': []}, 'directive': cloud.directive}
+            resp.update(cloud.directive)
+            return resp
+        cloud.respond = partial
+        agent = _agent(cloud, FakeExchange(), tmp_path)
+        for i in (1, 2):
+            agent.outbox.put('events', _err(i))
+        agent._sync(dict(LIVE_CEILINGS), T0)
+        batch, _ = agent.outbox.batch(1000, 10**9)
+>       assert [e['message'] for e in batch['events']] == ['error 2']
+E       AssertionError: assert [] == ['error 2']
+E         
+E         Right contains one more item: 'error 2'
+E         Use -v to get more diff
+
+security/test_findings.py:186: AssertionError
+_____ test_F25_lost_reply_order_is_found_by_client_order_id_and_accounted ______
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F25_lost_reply_order_is_f0')
+
+    def test_F25_lost_reply_order_is_found_by_client_order_id_and_accounted(tmp_path):
+        """reproduces: v1.2 looked for a lost-reply order only in the two lists; when they lagged, the order
+        (already filled) was never adopted, and the only way out was a manual 'not placed' - its fill was
+        never accounted."""
+        ex, cfg = FakeExchange(usdt=300.0), make_cfg()
+        ex.faults.append(('add', 'lose_reply_fill'))
+        _run(ex, tmp_path, cfg, T0)
+        oid = max(ex.orders)
+        ex.hide_all.add(oid)
+        for k in range(4):
+            _run(ex, tmp_path, cfg, T0 + 60 * (k + 1))
+        trades = [e for e in _events(tmp_path) if e.get('event') == 'trade' and e.get('id') == str(oid)]
+>       assert trades, 'the executed lost-reply order never reached the accounting'
+E       AssertionError: the executed lost-reply order never reached the accounting
+E       assert []
+
+security/test_findings.py:216: AssertionError
+__________ test_F25b_resolve_not_placed_refuses_when_the_order_exists __________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F25b_resolve_not_placed_r0')
+
+    def test_F25b_resolve_not_placed_refuses_when_the_order_exists(tmp_path):
+        """reproduces (audit 45): 'resolve --not-placed' cleared the placement without looking at the exchange."""
+        ex, cfg = FakeExchange(usdt=300.0), make_cfg()
+        ex.faults.append(('add', 'lose_reply'))
+        _run(ex, tmp_path, cfg, T0)
+        oid = max(ex.orders)
+        ex.hide_open.add(oid)
+        ex.hide_all.add(oid)
+        kwargs = {'pending_not_placed': True}
+        if 'client' in inspect.signature(cyc.resolve_manually).parameters:
+            kwargs['client'] = ex
+        try:
+            cyc.resolve_manually(Store(tmp_path), **kwargs)
+        except cyc.ManualResolution:
+            pass
+>       assert Store(tmp_path).load().get('pending'), 'pending placement cleared although the order exists'
+E       AssertionError: pending placement cleared although the order exists
+E       assert None
+E        +  where None = <built-in method get of dict object at 0x7f279f3ecd40>('pending')
+E        +    where <built-in method get of dict object at 0x7f279f3ecd40> = {'bot_orders': {}, 'day': '2023-11-14', 'orders_today': 1, 'notional_today': 19.98, ...}.get
+E        +      where {'bot_orders': {}, 'day': '2023-11-14', 'orders_today': 1, 'notional_today': 19.98, ...} = load()
+E        +        where load = <avid_core.cycle.Store object at 0x7f279f5e24e0>.load
+E        +          where <avid_core.cycle.Store object at 0x7f279f5e24e0> = Store(PosixPath('/tmp/pytest-of-root/pytest-84/test_F25b_resolve_not_placed_r0'))
+
+security/test_findings.py:234: AssertionError
+___________ test_F08_bot_trade_beyond_ten_pages_is_still_reconciled ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F08_bot_trade_beyond_ten_0')
+
+    def test_F08_bot_trade_beyond_ten_pages_is_still_reconciled(tmp_path):
+        """reproduces AVID-08: only 10 pages were read, so a bot trade behind 12 pages of newer trades was
+        never seen inside the history window."""
+        ex, cfg = FakeExchange(), make_cfg()
+        r = cycle(ex, Store(tmp_path), cfg, live=True, now=T0)
+        oid = int(r['id'])
+        ex.fill(oid, at=T0 + 10)
+        for i in range(12 * 30):
+            ex.foreign_trade(at=T0 + 20 + i)
+        _run(ex, tmp_path, cfg, T0 + 600)
+        _run(ex, tmp_path, cfg, T0 + 1200)
+>       assert str(oid) not in Store(tmp_path).load().get('fills_pending', {})
+E       AssertionError: assert '1000' not in {'1000': {'asset': 'btc', 'side': 'buy', 'filled': 0.000333, 'avg_price': 60000.0, ...}}
+E        +  where '1000' = str(1000)
+E        +  and   {'1000': {'asset': 'btc', 'side': 'buy', 'filled': 0.000333, 'avg_price': 60000.0, ...}} = <built-in method get of dict object at 0x7f279f42e500>('fills_pending', {})
+E        +    where <built-in method get of dict object at 0x7f279f42e500> = {'bot_orders': {'1001': {'asset': 'btc', 'side': 'buy', 'amount': 0.000333, 'price': 60000.0, ...}}, 'day': '2023-11-14', 'orders_today': 2, 'notional_today': 39.96, ...}.get
+E        +      where {'bot_orders': {'1001': {'asset': 'btc', 'side': 'buy', 'amount': 0.000333, 'price': 60000.0, ...}}, 'day': '2023-11-14', 'orders_today': 2, 'notional_today': 39.96, ...} = load()
+E        +        where load = <avid_core.cycle.Store object at 0x7f279f3d5d30>.load
+E        +          where <avid_core.cycle.Store object at 0x7f279f3d5d30> = Store(PosixPath('/tmp/pytest-of-root/pytest-84/test_F08_bot_trade_beyond_ten_0'))
+
+security/test_findings.py:249: AssertionError
+_______ test_F08b_unknown_filled_amount_is_never_reported_as_reconciled ________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F08b_unknown_filled_amoun0')
+
+    def test_F08b_unknown_filled_amount_is_never_reported_as_reconciled(tmp_path):
+        """reproduces AVID-08: an order settled by hand (filled amount unknown) became
+        'reconciled_from_history' after the window although the history may be incomplete."""
+        ex, cfg = FakeExchange(), make_cfg()
+        r = cycle(ex, Store(tmp_path), cfg, live=True, now=T0)
+        oid = int(r['id'])
+        ex.fill(oid, amount=ex.orders[oid]['amount'] / 2, at=T0 + 5)
+        ex.orders[oid]['status'] = 'Canceled'
+        ex.status_fail.add(oid)
+        for k in range(8):
+            _run(ex, tmp_path, cfg, T0 + 60 * (k + 1))
+        cyc.resolve_manually(Store(tmp_path), closing_ids=[str(oid)])
+        _run(ex, tmp_path, cfg, T0 + 3 * 86400)
+        claims = [e for e in _events(tmp_path) if e.get('id') == str(oid)
+                  and e.get('accounting') in ('reconciled', 'reconciled_from_history')]
+>       assert not claims, claims
+E       AssertionError: [{'at': '2026-11-02T04:58:44+00:00', 'event': 'fills_reconciled', 'id': '1000', 'asset': 'btc', ...}]
+E       assert not [{'at': '2026-11-02T04:58:44+00:00', 'event': 'fills_reconciled', 'id': '1000', 'asset': 'btc', ...}]
+
+security/test_findings.py:268: AssertionError
+___________ test_F09_nan_in_state_file_cannot_disable_the_daily_cap ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F09_nan_in_state_file_can0')
+
+    def test_F09_nan_in_state_file_cannot_disable_the_daily_cap(tmp_path):
+        """reproduces (audit 21/36): json accepts NaN; notional_today=NaN made every cap comparison False."""
+        ex, cfg = FakeExchange(usdt=300.0), make_cfg(max_daily_usdt=30.0)
+        _run(ex, tmp_path, make_cfg(weights={'btc': 0.0, 'paxg': 0.0, 'usdt': 1.0}), T0)
+        p = Store(tmp_path).state_path
+        st = json.loads(p.read_text())
+        st['notional_today'] = float('nan')
+        p.write_text(json.dumps(st))
+        for k in range(4):
+            _run(ex, tmp_path, cfg, T0 + 60 * (k + 1))
+            for o in ex.open_bot_orders():
+                ex.fill(o['id'])
+        total = sum(o['amount'] * o['price'] for o in ex.bot_orders())
+>       assert total <= 30.0 + 1e-6, f'{total:.2f} USDT sent with a daily cap of 30'
+E       AssertionError: 39.96 USDT sent with a daily cap of 30
+E       assert 39.96 <= (30.0 + 1e-06)
+
+security/test_findings.py:285: AssertionError
+_____________ test_F17_clock_going_back_does_not_reset_daily_caps ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F17_clock_going_back_does0')
+
+    def test_F17_clock_going_back_does_not_reset_daily_caps(tmp_path):
+        """reproduces (audit 41): a clock that went back one day reset the day's counters, twice."""
+        ex, cfg = FakeExchange(usdt=300.0), make_cfg(max_orders_per_day=1)
+        for t in (T0, T0 + 60, T0 - 86400, T0 - 86340, T0 + 120, T0 + 180):
+            _run(ex, tmp_path, cfg, t)
+            for o in ex.open_bot_orders():
+                ex.fill(o['id'])
+>       assert len(ex.bot_orders()) == 1
+E       AssertionError: assert 3 == 1
+E        +  where 3 = len([{'id': 1000, 'cid': 'avid1700000000000001d73ebf', 'type': 'buy', 'src': 'btc', ...}, {'id': 1001, 'cid': 'avid1699913...'type': 'buy', 'src': 'btc', ...}, {'id': 1002, 'cid': 'avid1700000120000003e42cdd', 'type': 'buy', 'src': 'btc', ...}])
+E        +    where [{'id': 1000, 'cid': 'avid1700000000000001d73ebf', 'type': 'buy', 'src': 'btc', ...}, {'id': 1001, 'cid': 'avid1699913...'type': 'buy', 'src': 'btc', ...}, {'id': 1002, 'cid': 'avid1700000120000003e42cdd', 'type': 'buy', 'src': 'btc', ...}] = bot_orders()
+E        +      where bot_orders = <fakes.FakeExchange object at 0x7f279f309040>.bot_orders
+
+security/test_findings.py:295: AssertionError
+____________ test_F18_deleted_state_file_does_not_reset_daily_caps _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F18_deleted_state_file_do0')
+
+    def test_F18_deleted_state_file_does_not_reset_daily_caps(tmp_path):
+        """reproduces (audit 36): deleting state.json gave the day's caps back."""
+        ex, cfg = FakeExchange(usdt=300.0), make_cfg(max_orders_per_day=1)
+        _run(ex, tmp_path, cfg, T0)
+        for o in ex.open_bot_orders():
+            ex.fill(o['id'])
+        _run(ex, tmp_path, cfg, T0 + 60)
+        Store(tmp_path).state_path.unlink()
+        _run(ex, tmp_path, cfg, T0 + 120)
+        _run(ex, tmp_path, cfg, T0 + 180)
+>       assert len(ex.bot_orders()) == 1
+E       AssertionError: assert 2 == 1
+E        +  where 2 = len([{'id': 1000, 'cid': 'avid1700000000000001c32c6e', 'type': 'buy', 'src': 'btc', ...}, {'id': 1001, 'cid': 'avid170000012000000148b842', 'type': 'buy', 'src': 'btc', ...}])
+E        +    where [{'id': 1000, 'cid': 'avid1700000000000001c32c6e', 'type': 'buy', 'src': 'btc', ...}, {'id': 1001, 'cid': 'avid170000012000000148b842', 'type': 'buy', 'src': 'btc', ...}] = bot_orders()
+E        +      where bot_orders = <fakes.FakeExchange object at 0x7f279f308140>.bot_orders
+
+security/test_findings.py:308: AssertionError
+________ test_F10_cloud_nan_max_spread_cannot_disable_the_spread_check _________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F10_cloud_nan_max_spread_0')
+
+    def test_F10_cloud_nan_max_spread_cannot_disable_the_spread_check(tmp_path):
+        """reproduces (audit 18/21): a NaN max_spread from the cloud switched the spread check off."""
+        ex = FakeExchange(books={'btc': (60000.0, 63000.0), 'paxg': (2400.0, 2401.0)})      # 5 % spread
+        agent = _agent(FakeCloud(directive=directive('live', pol=policy(max_spread=float('nan')))), ex, tmp_path)
+        for k in range(3):
+            agent.step(now=T0 + 600 * k)
+>       assert ex.add_attempts == 0
+E       assert 1 == 0
+E        +  where 1 = <fakes.FakeExchange object at 0x7f279f308050>.add_attempts
+
+security/test_findings.py:318: AssertionError
+_________ test_F10b_cloud_nan_min_cash_cannot_disable_the_cash_reserve _________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F10b_cloud_nan_min_cash_c0')
+
+    def test_F10b_cloud_nan_min_cash_cannot_disable_the_cash_reserve(tmp_path):
+        """reproduces (audit 18/21): a NaN min_cash_usdt disabled the cash-reserve check."""
+        ex = FakeExchange(usdt=100.0)
+        agent = _agent(FakeCloud(directive=directive('live', pol=policy(min_cash_usdt=float('nan')))), ex, tmp_path)
+        agent.step(now=T0)
+>       assert ex.add_attempts == 0
+E       assert 1 == 0
+E        +  where 1 = <fakes.FakeExchange object at 0x7f279f30a4e0>.add_attempts
+
+security/test_findings.py:326: AssertionError
+______________ test_F30_cloud_cannot_widen_the_local_spread_limit ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F30_cloud_cannot_widen_th0')
+
+    def test_F30_cloud_cannot_widen_the_local_spread_limit(tmp_path):
+        """reproduces (audit 18, Invariant E): a valid but loose cloud max_spread (5 %) let orders rest on a
+        3 % spread although the local default is 1 %."""
+        ex = FakeExchange(books={'btc': (60000.0, 61800.0), 'paxg': (2400.0, 2401.0)})
+        agent = _agent(FakeCloud(directive=directive('live', pol=policy(max_spread=0.05))), ex, tmp_path)
+        agent.step(now=T0)
+>       assert ex.add_attempts == 0
+E       assert 1 == 0
+E        +  where 1 = <fakes.FakeExchange object at 0x7f279f6a2c60>.add_attempts
+
+security/test_findings.py:335: AssertionError
+______ test_F11_corrupt_or_deleted_control_file_never_widens_permissions _______
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F11_corrupt_or_deleted_co0')
+
+    def test_F11_corrupt_or_deleted_control_file_never_widens_permissions(tmp_path):
+        """reproduces (report 10.2): an invalid control file was ignored and the CLI ceiling (--live) applied."""
+        from avid_core import control
+        ex, cfg = FakeExchange(), make_cfg()
+        control.save(tmp_path, {'mode': 'dry'})
+        r = cycle(ex, Store(tmp_path), cfg, live=True, now=T0)
+        assert r['event'] == 'dry_run_would_place'
+        control.control_path(tmp_path).write_text('{"mode": "dry", ')
+        _run(ex, tmp_path, cfg, T0 + 60)
+        control.control_path(tmp_path).unlink()
+        _run(ex, tmp_path, cfg, T0 + 120)
+>       assert ex.add_attempts == 0
+E       assert 1 == 0
+E        +  where 1 = <fakes.FakeExchange object at 0x7f279f52a300>.add_attempts
+
+security/test_findings.py:367: AssertionError
+__________________ test_F12_cloud_never_removes_a_manual_stop __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F12_cloud_never_removes_a0')
+
+    def test_F12_cloud_never_removes_a_manual_stop(tmp_path):
+        """reproduces (audit 18): STOP was shared; a 'touch STOP' while the cloud kill switch was on was
+        deleted when the cloud switched it off."""
+        cloud = FakeCloud(directive=directive('live', kill=True))
+        agent = _agent(cloud, FakeExchange(), tmp_path)
+        agent.step(now=T0)
+        stop = agent.store.dir / 'STOP'
+        stop.touch()
+        cloud.directive = directive('live', kill=False)
+        agent.step(now=T0 + 600)
+>       assert stop.exists()
+E       AssertionError: assert False
+E        +  where False = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-root/pytest-84/test_F12_cloud_never_removes_a0/data/bot/STOP').exists
+
+security/test_findings.py:380: AssertionError
+_____________ test_F20_malformed_directive_does_not_crash_the_step _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F20_malformed_directive_d0')
+
+    def test_F20_malformed_directive_does_not_crash_the_step(tmp_path):
+        """reproduces (audit 18): a portfolio that is not an object raised AttributeError, so the cycle (and
+        the cancellation of open orders) never ran."""
+        agent = _agent(FakeCloud(directive={'global_halt': False, 'portfolio': ['not', 'an', 'object']}),
+                       FakeExchange(), tmp_path)
+>       res = agent.step(now=T0)
+              ^^^^^^^^^^^^^^^^^^
+
+security/test_findings.py:388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../orig/agent/avid_agent/engine.py:130: in step
+    cfg, why = self._apply(directive, ceil, offline, revoked)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <avid_agent.engine.Agent object at 0x7f279f582650>
+d = {'protocol': 2, 'agent_id': 'agent-test', 'batch_id': None, 'ack': {'accepted': [], 'rejected': []}, ...}
+ceil = {'live_allowed': True, 'max_order_usdt': 20, 'max_orders_per_day': 6, 'max_daily_usdt': 100}
+offline = False, revoked = False, reason = None
+
+    def _apply(self, d: dict | None, ceil: dict, offline: bool, revoked: bool = False, reason: str | None = None):
+        port = (d or {}).get('portfolio')
+>       pol = (port or {}).get('policy')
+              ^^^^^^^^^^^^^^^^
+E       AttributeError: 'list' object has no attribute 'get'
+
+../../orig/agent/avid_agent/engine.py:247: AttributeError
+_________________ test_F21_hostile_cloud_json_is_a_cloud_error _________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F21_hostile_cloud_json_is0')
+
+    def test_F21_hostile_cloud_json_is_a_cloud_error(tmp_path):
+        """reproduces (audit 18): deeply nested JSON raised RecursionError out of the cloud client."""
+        from avid_agent.cloud import CloudClient, CloudError
+    
+        class R:
+            def __init__(self, b):
+                self.b = b
+    
+            def __enter__(self):
+                return self
+    
+            def __exit__(self, *a):
+                return False
+    
+            def read(self, n=-1):
+                return self.b
+        body = b'[' * 200_000 + b']' * 200_000
+        c = CloudClient('https://cloud.example', 'agent-1', b'\x01' * 32, opener=lambda req, timeout=None: R(body))
+        with pytest.raises(CloudError):
+>           c.sync({})
+
+security/test_findings.py:411: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../orig/agent/avid_agent/cloud.py:81: in sync
+    return self._post('/agent/v1/sync', report, signed=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../orig/agent/avid_agent/cloud.py:62: in _post
+    return json.loads(r.read(4_000_001).decode())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.13/json/__init__.py:352: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.13/json/decoder.py:345: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x7f279ff87e00>
+s = '[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[...]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]'
+idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+>           obj, end = self.scan_once(s, idx)
+                       ^^^^^^^^^^^^^^^^^^^^^^
+E           RecursionError: maximum recursion depth exceeded while decoding a JSON array from a unicode string
+
+/usr/local/lib/python3.13/json/decoder.py:361: RecursionError
+_____________ test_F19_broken_ceilings_file_still_lets_stop_cancel _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F19_broken_ceilings_file_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f279f20fd40>
+
+    def test_F19_broken_ceilings_file_still_lets_stop_cancel(tmp_path, monkeypatch):
+        """reproduces (audit 59): a broken ceilings.json raised before the cycle, so STOP could not cancel."""
+        from avid_agent import config
+        monkeypatch.setattr(config, 'HOME', tmp_path)
+        config.save_ceilings(dict(LIVE_CEILINGS))
+        ex = FakeExchange()
+        from avid_agent.engine import Agent
+        agent = Agent(FakeCloud(directive=directive('live')), ex, tmp_path, config.load_ceilings)
+        agent.step(now=T0)
+        assert len(ex.open_bot_orders()) == 1
+        (tmp_path / 'ceilings.json').write_text('{"live_allowed": tru')
+        (agent.store.dir / 'STOP').write_text('stop')
+        try:
+            agent.step(now=T0 + 600)
+        except Exception:
+            pass
+>       assert ex.open_bot_orders() == []
+E       AssertionError: assert [{'id': 1000,...: 'btc', ...}] == []
+E         
+E         Left contains one more item: {'id': 1000, 'cid': 'avid1700000000000001ae1a33', 'type': 'buy', 'src': 'btc', ...}
+E         Use -v to get more diff
+
+security/test_findings.py:430: AssertionError
+___________ test_F13_unknown_network_name_is_an_error_not_production ___________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f279f3019d0>
+
+    def test_F13_unknown_network_name_is_an_error_not_production(monkeypatch):
+        """reproduces (audit 43): NOBITEX_NETWORK=testnett silently meant PRODUCTION."""
+        from avid_core import client
+        monkeypatch.setenv('NOBITEX_NETWORK', 'testnett')
+>       with pytest.raises((client.NobitexError, ValueError)):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE any of (NobitexError, ValueError)
+
+security/test_findings.py:438: Failed
+__________________ test_F14_stale_keep_orders_flag_is_ignored __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F14_stale_keep_orders_fla0')
+
+    def test_F14_stale_keep_orders_flag_is_ignored(tmp_path):
+        """reproduces (audit 44): a keep-orders flag left over from an old 'restart' made a later shutdown
+        keep the bot's orders open."""
+        from avid_agent import __main__ as cli
+        flag = tmp_path / cli.KEEP_FLAG
+        old = time.time() - 86400
+        flag.write_text(str(int(old)))
+        os.utime(flag, (old, old))
+        called = []
+    
+        class A:
+            def safe_shutdown(self):
+                called.append(1)
+                return {'ok': True, 'open_bot_orders': [], 'message': 'ok'}
+        cli.on_stop(A(), tmp_path)
+>       assert called
+E       assert []
+
+security/test_findings.py:457: AssertionError
+_ test_F15_installer_does_not_link_a_user_writable_script_into_the_system_path _
+
+    def test_F15_installer_does_not_link_a_user_writable_script_into_the_system_path():
+        """reproduces (audit 54): 'sudo ln -sf' put a user-writable script on root's PATH."""
+        text = (SRC / 'scripts/avid-agent').read_text()
+>       assert 'sudo ln' not in text and '/usr/local/bin' not in text
+E       assert ('sudo ln' not in '#!/usr/bin/..." ;;\nesac\n'
+E         
+E         'sudo ln' is contained here:
+E           F"
+E               if sudo ln -sf "$SELF" /usr/local/bin/avid-agent; then echo "installed: avid-agent"; fi
+E         ?        +++++++
+E               mkdir -p "$(dirname "$UNIT")"
+E               cat > "$UNIT" <<UNITEOF...
+E         
+E         ...Full output truncated (43 lines hidden), use '-vv' to show)
+
+security/test_findings.py:463: AssertionError
+_______________ test_F22_live_orders_need_a_constant_time_signer _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F22_live_orders_need_a_co0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f279f6ab110>
+
+    def test_F22_live_orders_need_a_constant_time_signer(tmp_path, monkeypatch):
+        """reproduces (report 10.3, audit 33): live orders were signed by the pure-Python Ed25519.
+        0.1.0a2 (PRA-04): on mainnet there is no override at all - not even AVID_ALLOW_PURE_ED25519=1."""
+        monkeypatch.setitem(sys.modules, 'cryptography.hazmat.primitives.asymmetric.ed25519', None)
+        monkeypatch.setenv('AVID_ALLOW_PURE_ED25519', '1')       # e.g. copied from a test setup
+        ex = FakeExchange()
+        ex.auth_mode, ex.signer, ex.network = 'api_key', 'pure', 'mainnet'   # a client that signs with pure Python
+        _run(ex, tmp_path, make_cfg(), T0)
+>       assert ex.add_attempts == 0
+E       assert 1 == 0
+E        +  where 1 = <fakes.FakeExchange object at 0x7f279f52b2f0>.add_attempts
+
+security/test_findings.py:474: AssertionError
+________________ test_F23_agent_id_from_the_cloud_is_validated _________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-84/test_F23_agent_id_from_the_clo0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f279f384730>
+
+    def test_F23_agent_id_from_the_cloud_is_validated(tmp_path, monkeypatch):
+        """reproduces (audit 16): any agent_id was stored and later sent as an HTTP header."""
+        from avid_agent import config
+        monkeypatch.setattr(config, 'HOME', tmp_path)
+>       with pytest.raises((config.ConfigError, ValueError)):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE any of (ConfigError, ValueError)
+
+security/test_findings.py:481: Failed
+__________ test_F24_64_byte_key_with_a_wrong_public_half_is_rejected ___________
+
+    def test_F24_64_byte_key_with_a_wrong_public_half_is_rejected():
+        """reproduces (audit 33): seed||public keys were accepted without checking the public half."""
+        from avid_core import ed25519
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+security/test_findings.py:488: Failed
+35 failed, 9 passed in 0.84s

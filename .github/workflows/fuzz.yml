@@ -1,0 +1,48 @@
+name: long-fuzz
+
+# The long invariant fuzz run (10 000 random steps x 8 seeds against the misbehaving simulated
+# exchange, plus the agent fuzz). Weekly and on demand. A violated invariant fails the job; the log
+# (seeds, step numbers, the failing assertion) is kept as an artifact either way.
+on:
+  schedule:
+    - cron: '17 3 * * 1'
+  workflow_dispatch:
+    inputs:
+      steps:
+        description: random steps per seed
+        default: '10000'
+      seeds:
+        description: number of seeds
+        default: '8'
+
+permissions:
+  contents: read
+
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0   # v7.1.0
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check pytest==9.1.1 cryptography==50.0.1
+      - name: engine and agent fuzz
+        env:
+          AVID_FUZZ_STEPS: ${{ inputs.steps || '10000' }}
+          AVID_FUZZ_SEEDS: ${{ inputs.seeds || '8' }}
+          AVID_AGENT_FUZZ_STEPS: '2000'
+          AVID_PROPERTY_CASES: '20000'
+        run: |
+          set -o pipefail
+          mkdir -p fuzz-out
+          python -m pytest -v -m "fuzz or property" --junitxml=fuzz-out/junit.xml 2>&1 | tee fuzz-out/fuzz.log
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9   # v7.0.2
+        if: always()
+        with:
+          name: fuzz-results
+          path: fuzz-out/
+          retention-days: 30

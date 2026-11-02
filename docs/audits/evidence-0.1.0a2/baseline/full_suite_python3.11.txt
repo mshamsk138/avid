@@ -1,0 +1,17 @@
+# baseline 0.1.0a1 — full suite on Python 3.11.18 (pytest 9.1.1 from a pure-Python shim; distro cryptography 41.0.7)
+FAILED security/test_findings.py::test_F08b_unknown_filled_amount_is_never_reported_as_reconciled
+FAILED security/test_findings.py::test_F09_nan_in_state_file_cannot_disable_the_daily_cap
+FAILED security/test_findings.py::test_F17_clock_going_back_does_not_reset_daily_caps
+FAILED security/test_findings.py::test_F18_deleted_state_file_does_not_reset_daily_caps
+FAILED security/test_findings.py::test_F10_cloud_nan_max_spread_cannot_disable_the_spread_check
+FAILED security/test_findings.py::test_F10b_cloud_nan_min_cash_cannot_disable_the_cash_reserve
+FAILED security/test_findings.py::test_F30_cloud_cannot_widen_the_local_spread_limit
+FAILED security/test_findings.py::test_F28_cloud_cannot_enable_live_without_local_permission
+FAILED security/test_findings.py::test_F29_cloud_cannot_raise_local_caps - py...
+FAILED security/test_findings.py::test_F11_corrupt_or_deleted_control_file_never_widens_permissions
+FAILED security/test_findings.py::test_F12_cloud_never_removes_a_manual_stop
+FAILED security/test_findings.py::test_F20_malformed_directive_does_not_crash_the_step
+FAILED security/test_findings.py::test_F21_hostile_cloud_json_is_a_cloud_error
+FAILED security/test_findings.py::test_F19_broken_ceilings_file_still_lets_stop_cancel
+90 failed, 163 passed, 5 skipped in 12.64s
+wall seconds: 13
