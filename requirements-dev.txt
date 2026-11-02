@@ -2,4 +2,4 @@
 # live trading additionally needs `cryptography` (Debian/Ubuntu/Kali: apt install python3-cryptography).
 pytest==9.1.1
 cryptography==50.0.1
-setuptools==80.9.0
+setuptools==84.1.0
